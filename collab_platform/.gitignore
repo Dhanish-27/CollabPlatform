@@ -1,0 +1,125 @@
+# =========================
+# OS & Editor
+# =========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+ehthumbs.db
+
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# =========================
+# Backend (Django / Python)
+# =========================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Virtual environments
+backend/venv/
+backend/env/
+backend/.venv/
+.venv/
+venv/
+env/
+
+# Django specific
+backend/db.sqlite3
+backend/db.sqlite3-journal
+backend/media/
+backend/static_root/
+backend/staticfiles/
+
+# Migrations (optional — keep if you want to track schema history)
+# backend/**/migrations/
+
+# Coverage / testing
+.coverage
+htmlcov/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+
+# MyPy / type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# =========================
+# Frontend (React / Node)
+# =========================
+
+# Dependencies
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+
+# Production build output
+frontend/build/
+frontend/dist/
+
+# Testing
+frontend/coverage/
+
+# Cache
+frontend/.cache/
+frontend/.parcel-cache/
+
+# Misc
+frontend/.eslintcache
+frontend/.stylelintcache
+
+# =========================
+# Secrets & Environment
+# =========================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+backend/access.log
+backend/error.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# =========================
+# Misc
+# =========================
+*.bak
+*.tmp
+*.swp
+*.orig
+.DS_Store

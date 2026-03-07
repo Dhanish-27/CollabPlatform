@@ -1,0 +1,336 @@
+/* App.css - Black and White Professional Theme */
+
+.hero {
+    background: #000000;
+    color: white;
+    padding: 100px 20px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 56px;
+    margin-bottom: 24px;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.hero p {
+    font-size: 20px;
+    max-width: 600px;
+    margin: 0 auto 40px;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+.search-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-input-group {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 2px solid white;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.search-input-group input {
+    flex: 1;
+    border: none;
+    padding: 16px 24px;
+    font-size: 16px;
+    background: transparent;
+}
+
+.search-input-group input:focus {
+    outline: none;
+}
+
+.search-input-group button {
+    border-radius: 2px;
+}
+
+.features {
+    padding: 80px 20px;
+    background: var(--surface);
+}
+
+.features h2 {
+    text-align: center;
+    margin-bottom: 48px;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 32px;
+}
+
+.feature-card {
+    text-align: center;
+    padding: 40px 30px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+}
+
+.feature-icon {
+    font-size: 48px;
+    margin-bottom: 24px;
+    color: var(--primary-color);
+}
+
+.feature-card h3 {
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.feature-card p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.section-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.project-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.project-category {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.project-card h3 {
+    margin-bottom: 12px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.project-card .description {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.project-meta {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.project-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.tech-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #f5f5f5;
+    border: 1px solid var(--border-color);
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.difficulty {
+    padding: 4px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.difficulty.beginner {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.difficulty.intermediate {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+}
+
+.difficulty.advanced {
+    background: #333;
+    color: #fff;
+    border-color: #333;
+}
+
+.difficulty.expert {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+}
+
+.status {
+    padding: 4px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status.idea {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.status.accepting {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+}
+
+.status.in_progress {
+    background: #333;
+    color: #fff;
+    border-color: #333;
+}
+
+.status.completed {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+}
+
+.cta {
+    background: #000000;
+    color: white;
+    padding: 100px 20px;
+    text-align: center;
+}
+
+.cta h2 {
+    margin-bottom: 16px;
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.cta p {
+    margin-bottom: 32px;
+    opacity: 0.8;
+    font-size: 18px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cta .btn {
+    background: white;
+    color: black;
+    border-color: white;
+}
+
+.cta .btn:hover {
+    background: #f5f5f5;
+    border-color: #f5f5f5;
+}
+
+/* Page headers */
+.page-header {
+    margin-bottom: 40px;
+}
+
+.page-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.page-header p {
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-state h3 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+/* Divider */
+.divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 24px 0;
+}
