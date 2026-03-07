@@ -107,3 +107,38 @@ class Announcement(models.Model):
     
     def __str__(self):
         return f"{self.project.title}: {self.title}"
+
+
+class PendingMessage(models.Model):
+    """
+    Temporary offline message queue (WhatsApp-style).
+    Messages are stored here for offline users and DELETED upon ACK from recipient.
+    This model should never grow large - it is ephemeral by design.
+    """
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='pending_messages'
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sent_pending_messages'
+    )
+    project = models.ForeignKey(
+        'projects.Project',
+        on_delete=models.CASCADE,
+        related_name='pending_messages'
+    )
+    # Unique client-generated message ID (e.g., "msg_1234567890_abc123")
+    message_id = models.CharField(max_length=200, db_index=True)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+        # Allow same message_id for different recipients (group broadcast)
+        unique_together = ['message_id', 'recipient']
+
+    def __str__(self):
+        return f"Pending for {self.recipient.email}: {self.content[:50]}"

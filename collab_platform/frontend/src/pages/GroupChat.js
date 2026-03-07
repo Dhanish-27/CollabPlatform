@@ -116,19 +116,17 @@ const ConnectionStatus = ({ status }) => {
     if (status === 'connected') return null;
 
     const statusConfig = {
-        connecting: { icon: FaCircle, text: 'Connecting...', className: 'wp-status-connecting' },
-        reconnecting: { icon: FaExclamationTriangle, text: 'Reconnecting...', className: 'wp-status-reconnecting' },
-        disconnected: { icon: FaWifi, text: 'Offline', className: 'wp-status-disconnected' }
+        connecting: { text: 'Connecting to chat…', className: 'ws-toast-connecting' },
+        reconnecting: { text: 'Reconnecting…', className: 'ws-toast-reconnecting' },
+        disconnected: { text: 'You are offline', className: 'ws-toast-disconnected' },
     };
 
     const config = statusConfig[status];
     if (!config) return null;
 
-    const Icon = config.icon;
-
     return (
-        <div className={`wp-connection-banner ${config.className}`}>
-            <Icon className="wp-connection-icon" />
+        <div className={`ws-toast ${config.className}`}>
+            <span className="ws-toast-dot" />
             <span>{config.text}</span>
         </div>
     );
@@ -338,230 +336,232 @@ const GroupChat = () => {
     }
 
     return (
-        <div className="wp-container">
-            {/* Connection Status Banner */}
+        <>
+            {/* Connection Status — centered popup toast, not in sidebar */}
             <ConnectionStatus status={connectionStatus} />
 
-            {/* Sidebar - Chat List */}
-            <div className="wp-sidebar wp-chat-sidebar">
-                {/* Sidebar Header */}
-                <div className="wp-sidebar-header">
-                    <div className="wp-sidebar-header-row">
-                        <button className="wp-back-btn" onClick={() => navigate('/groups')}>
-                            <FaArrowLeft />
-                        </button>
-                        <h2>Chats</h2>
-                    </div>
-                    <div className="wp-search-container">
-                        <FaSearch className="wp-search-icon" />
-                        <input
-                            type="text"
-                            placeholder="Search conversations..."
-                            className="wp-search-input"
-                        />
-                    </div>
-                </div>
-
-                {/* Chat List */}
-                <div className="wp-chats-list">
-                    <div className="wp-chat-item wp-chat-item-active">
-                        <div className="wp-chat-avatar">
-                            {group.image ? (
-                                <img src={group.image} alt={group.title} />
-                            ) : (
-                                <div className="wp-avatar-placeholder">
-                                    {group.title.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                            {/* Online indicator */}
-                            {isOtherUserOnline && (
-                                <div className="wp-online-indicator"></div>
-                            )}
+            <div className="wp-container">
+                {/* Sidebar - Chat List */}
+                <div className="wp-sidebar wp-chat-sidebar">
+                    {/* Sidebar Header */}
+                    <div className="wp-sidebar-header">
+                        <div className="wp-sidebar-header-row">
+                            <button className="wp-back-btn" onClick={() => navigate('/groups')}>
+                                <FaArrowLeft />
+                            </button>
+                            <h2>Chats</h2>
                         </div>
-                        <div className="wp-chat-info">
-                            <div className="wp-chat-header-row">
-                                <h3 className="wp-chat-name">{group.title}</h3>
+                        <div className="wp-search-container">
+                            <FaSearch className="wp-search-icon" />
+                            <input
+                                type="text"
+                                placeholder="Search conversations..."
+                                className="wp-search-input"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Chat List */}
+                    <div className="wp-chats-list">
+                        <div className="wp-chat-item wp-chat-item-active">
+                            <div className="wp-chat-avatar">
+                                {group.image ? (
+                                    <img src={group.image} alt={group.title} />
+                                ) : (
+                                    <div className="wp-avatar-placeholder">
+                                        {group.title.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
+                                {/* Online indicator */}
+                                {isOtherUserOnline && (
+                                    <div className="wp-online-indicator"></div>
+                                )}
                             </div>
-                            <p className="wp-chat-preview">
-                                {activeTypingUser
-                                    ? `${activeTypingUser[1].name} is typing...`
-                                    : group.members_count
-                                        ? `${group.members_count} members`
-                                        : 'Click to chat'
-                                }
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Chat Area */}
-            <div className="wp-main-area wp-chat-main">
-                {/* Chat Header */}
-                <div className="wp-chat-header">
-                    <div className="wp-chat-header-left" onClick={() => setShowInfoPanel(true)}>
-                        <div className="wp-chat-avatar">
-                            {group.image ? (
-                                <img src={group.image} alt={group.title} />
-                            ) : (
-                                <div className="wp-avatar-placeholder">
-                                    {group.title.charAt(0).toUpperCase()}
+                            <div className="wp-chat-info">
+                                <div className="wp-chat-header-row">
+                                    <h3 className="wp-chat-name">{group.title}</h3>
                                 </div>
-                            )}
-                            {/* Online indicator */}
-                            {isOtherUserOnline && (
-                                <div className="wp-online-indicator"></div>
-                            )}
-                        </div>
-                        <div className="wp-chat-header-info">
-                            <h3 className="wp-chat-title">{group.title}</h3>
-                            <p className="wp-chat-subtitle">
-                                {activeTypingUser
-                                    ? 'typing...'
-                                    : getPresenceText() || (group.members_count ? `${group.members_count} members` : 'Click for group info')
-                                }
-                            </p>
-                        </div>
-                    </div>
-                    <div className="wp-chat-header-actions">
-                        <button className="wp-header-btn" title="Voice call">
-                            <FaPhone />
-                        </button>
-                        <button className="wp-header-btn" title="Video call">
-                            <FaVideo />
-                        </button>
-                        <button
-                            className="wp-header-btn"
-                            title="Search"
-                            onClick={() => setShowInfoPanel(true)}
-                        >
-                            <FaSearch />
-                        </button>
-                        <button
-                            className="wp-header-btn"
-                            title="More options"
-                            onClick={() => setShowInfoPanel(!showInfoPanel)}
-                        >
-                            <FaEllipsisV />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Messages Area */}
-                <div className="wp-messages-container" ref={messageListRef}>
-                    {/* Chat Background Pattern */}
-                    <div className="wp-chat-background"></div>
-
-                    <div className="wp-messages-list">
-                        {/* Welcome Message */}
-                        <div className="wp-message wp-message-welcome">
-                            <div className="wp-message-content wp-welcome-content">
-                                <FaInfoCircle className="wp-welcome-icon" />
-                                <p>Messages are end-to-end encrypted. No one outside of this group can read them.</p>
+                                <p className="wp-chat-preview">
+                                    {activeTypingUser
+                                        ? `${activeTypingUser[1].name} is typing...`
+                                        : group.members_count
+                                            ? `${group.members_count} members`
+                                            : 'Click to chat'
+                                    }
+                                </p>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        {messages.map((message, index) => {
-                            const isOwnMessage = message.senderId === user?.id || message.author?.id === user?.id;
-                            const showDate = shouldShowDate(message, messages[index - 1]);
+                {/* Main Chat Area */}
+                <div className="wp-main-area wp-chat-main">
+                    {/* Chat Header */}
+                    <div className="wp-chat-header">
+                        <div className="wp-chat-header-left" onClick={() => setShowInfoPanel(true)}>
+                            <div className="wp-chat-avatar">
+                                {group.image ? (
+                                    <img src={group.image} alt={group.title} />
+                                ) : (
+                                    <div className="wp-avatar-placeholder">
+                                        {group.title.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
+                                {/* Online indicator */}
+                                {isOtherUserOnline && (
+                                    <div className="wp-online-indicator"></div>
+                                )}
+                            </div>
+                            <div className="wp-chat-header-info">
+                                <h3 className="wp-chat-title">{group.title}</h3>
+                                <p className="wp-chat-subtitle">
+                                    {activeTypingUser
+                                        ? 'typing...'
+                                        : getPresenceText() || (group.members_count ? `${group.members_count} members` : 'Click for group info')
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        <div className="wp-chat-header-actions">
+                            <button className="wp-header-btn" title="Voice call">
+                                <FaPhone />
+                            </button>
+                            <button className="wp-header-btn" title="Video call">
+                                <FaVideo />
+                            </button>
+                            <button
+                                className="wp-header-btn"
+                                title="Search"
+                                onClick={() => setShowInfoPanel(true)}
+                            >
+                                <FaSearch />
+                            </button>
+                            <button
+                                className="wp-header-btn"
+                                title="More options"
+                                onClick={() => setShowInfoPanel(!showInfoPanel)}
+                            >
+                                <FaEllipsisV />
+                            </button>
+                        </div>
+                    </div>
 
-                            return (
-                                <React.Fragment key={message.id || index}>
-                                    {showDate && (
-                                        <div className="wp-date-divider">
-                                            <span>{formatDate(message.timestamp || message.created_at)}</span>
-                                        </div>
-                                    )}
-                                    <div
-                                        className={`wp-message ${isOwnMessage ? 'wp-message-outgoing' : 'wp-message-incoming'}`}
-                                        data-message-id={message.id}
-                                        data-sender-id={message.senderId || message.author?.id}
-                                    >
-                                        <div className="wp-message-bubble">
-                                            {!isOwnMessage && (
-                                                <div className="wp-message-sender">
-                                                    {message.senderName || message.author?.username || message.author?.email || 'Unknown'}
-                                                </div>
-                                            )}
-                                            <div className="wp-message-text">{message.content}</div>
-                                            <div className="wp-message-meta">
-                                                <span className="wp-message-time">
-                                                    {formatTime(message.timestamp || message.created_at)}
-                                                </span>
-                                                {isOwnMessage && (
-                                                    <span className="wp-message-status">
-                                                        <StatusIcon status={message.status} />
-                                                    </span>
+                    {/* Messages Area */}
+                    <div className="wp-messages-container" ref={messageListRef}>
+                        {/* Chat Background Pattern */}
+                        <div className="wp-chat-background"></div>
+
+                        <div className="wp-messages-list">
+                            {/* Welcome Message */}
+                            <div className="wp-message wp-message-welcome">
+                                <div className="wp-message-content wp-welcome-content">
+                                    <FaInfoCircle className="wp-welcome-icon" />
+                                    <p>Messages are end-to-end encrypted. No one outside of this group can read them.</p>
+                                </div>
+                            </div>
+
+                            {messages.map((message, index) => {
+                                const isOwnMessage = message.senderId === user?.id || message.author?.id === user?.id;
+                                const showDate = shouldShowDate(message, messages[index - 1]);
+
+                                return (
+                                    <React.Fragment key={message.id || index}>
+                                        {showDate && (
+                                            <div className="wp-date-divider">
+                                                <span>{formatDate(message.timestamp || message.created_at)}</span>
+                                            </div>
+                                        )}
+                                        <div
+                                            className={`wp-message ${isOwnMessage ? 'wp-message-outgoing' : 'wp-message-incoming'}`}
+                                            data-message-id={message.id}
+                                            data-sender-id={message.senderId || message.author?.id}
+                                        >
+                                            <div className="wp-message-bubble">
+                                                {!isOwnMessage && (
+                                                    <div className="wp-message-sender">
+                                                        {message.senderName || message.author?.username || message.author?.email || 'Unknown'}
+                                                    </div>
                                                 )}
+                                                <div className="wp-message-text">{message.content}</div>
+                                                <div className="wp-message-meta">
+                                                    <span className="wp-message-time">
+                                                        {formatTime(message.timestamp || message.created_at)}
+                                                    </span>
+                                                    {isOwnMessage && (
+                                                        <span className="wp-message-status">
+                                                            <StatusIcon status={message.status} />
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
+                                    </React.Fragment>
+                                );
+                            })}
+
+                            {/* Typing indicator */}
+                            {activeTypingUser && (
+                                <div className="wp-message wp-message-incoming wp-typing-message">
+                                    <div className="wp-message-bubble wp-typing-bubble">
+                                        <span className="wp-typing-dot"></span>
+                                        <span className="wp-typing-dot"></span>
+                                        <span className="wp-typing-dot"></span>
                                     </div>
-                                </React.Fragment>
-                            );
-                        })}
-
-                        {/* Typing indicator */}
-                        {activeTypingUser && (
-                            <div className="wp-message wp-message-incoming wp-typing-message">
-                                <div className="wp-message-bubble wp-typing-bubble">
-                                    <span className="wp-typing-dot"></span>
-                                    <span className="wp-typing-dot"></span>
-                                    <span className="wp-typing-dot"></span>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        <div ref={messagesEndRef} />
+                            <div ref={messagesEndRef} />
+                        </div>
+                    </div>
+
+                    {/* Message Input */}
+                    <div className="wp-message-input-container">
+                        <button
+                            className="wp-input-btn"
+                            title="Emoji"
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        >
+                            <FaSmile />
+                        </button>
+                        <button className="wp-input-btn" title="Attach file">
+                            <FaPaperclip />
+                        </button>
+                        <button className="wp-input-btn" title="Camera">
+                            <FaCamera />
+                        </button>
+                        <div className="wp-input-wrapper">
+                            <textarea
+                                ref={inputRef}
+                                placeholder="Type a message..."
+                                value={newMessage}
+                                onChange={handleInputChange}
+                                onKeyPress={handleKeyPress}
+                                className="wp-message-input"
+                                rows={1}
+                                disabled={!isConnected && connectionStatus === 'disconnected'}
+                            />
+                        </div>
+                        <button
+                            className="wp-send-btn"
+                            onClick={handleSendMessage}
+                            disabled={!newMessage.trim() || !isConnected}
+                            title="Send message"
+                        >
+                            {newMessage.trim() ? <FaPaperPlane /> : <FaMicrophone />}
+                        </button>
                     </div>
                 </div>
 
-                {/* Message Input */}
-                <div className="wp-message-input-container">
-                    <button
-                        className="wp-input-btn"
-                        title="Emoji"
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    >
-                        <FaSmile />
-                    </button>
-                    <button className="wp-input-btn" title="Attach file">
-                        <FaPaperclip />
-                    </button>
-                    <button className="wp-input-btn" title="Camera">
-                        <FaCamera />
-                    </button>
-                    <div className="wp-input-wrapper">
-                        <textarea
-                            ref={inputRef}
-                            placeholder="Type a message..."
-                            value={newMessage}
-                            onChange={handleInputChange}
-                            onKeyPress={handleKeyPress}
-                            className="wp-message-input"
-                            rows={1}
-                            disabled={!isConnected && connectionStatus === 'disconnected'}
-                        />
-                    </div>
-                    <button
-                        className="wp-send-btn"
-                        onClick={handleSendMessage}
-                        disabled={!newMessage.trim() || !isConnected}
-                        title="Send message"
-                    >
-                        {newMessage.trim() ? <FaPaperPlane /> : <FaMicrophone />}
-                    </button>
-                </div>
+                {/* Group Info Panel */}
+                <GroupInfoPanel
+                    group={group}
+                    isOpen={showInfoPanel}
+                    onClose={() => setShowInfoPanel(false)}
+                    onlineUsers={onlineUsers}
+                    userPresence={userPresence}
+                />
             </div>
-
-            {/* Group Info Panel */}
-            <GroupInfoPanel
-                group={group}
-                isOpen={showInfoPanel}
-                onClose={() => setShowInfoPanel(false)}
-                onlineUsers={onlineUsers}
-                userPresence={userPresence}
-            />
-        </div>
+        </>
     );
 };
 

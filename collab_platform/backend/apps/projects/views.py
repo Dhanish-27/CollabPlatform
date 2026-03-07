@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Q
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 import uuid
 from datetime import timedelta
 from .models import (
@@ -19,10 +20,29 @@ from .serializers import (
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    """ViewSet for Project model."""
+    """ViewSet for Project model.
+    
+    Supports lookup by both numeric pk and slug:
+      /api/projects/42/       → lookup by pk
+      /api/projects/my-slug/  → lookup by slug
+    """
     queryset = Project.objects.all()
     permission_classes = [AllowAny]
     lookup_field = 'pk'
+
+    def get_object(self):
+        """Allow lookup by pk (int) or slug (str)."""
+        queryset = self.get_queryset()
+        lookup_value = self.kwargs.get(self.lookup_field)
+
+        # If the lookup value is purely numeric, use pk; otherwise use slug
+        if lookup_value and not lookup_value.isdigit():
+            obj = get_object_or_404(queryset, slug=lookup_value)
+        else:
+            obj = get_object_or_404(queryset, pk=lookup_value)
+
+        self.check_object_permissions(self.request, obj)
+        return obj
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -34,9 +54,23 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return ProjectDetailSerializer
     
     def get_queryset(self):
-        queryset = Project.objects.all()
-        
-        # Filter by visibility
+        user = self.request.user
+
+        # For list action: only public projects (+ own private for authenticated users)
+        if self.action == 'list':
+            if user.is_authenticated:
+                queryset = Project.objects.filter(
+                    Q(visibility='public') |
+                    Q(owner=user) |
+                    Q(members=user)
+                ).distinct()
+            else:
+                queryset = Project.objects.filter(visibility='public')
+        else:
+            # retrieve, update, delete, custom actions — no visibility restriction
+            queryset = Project.objects.all()
+
+        # Filter by visibility (explicit override via query param)
         visibility = self.request.query_params.get('visibility')
         if visibility:
             queryset = queryset.filter(visibility=visibility)

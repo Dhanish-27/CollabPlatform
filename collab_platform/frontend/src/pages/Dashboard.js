@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { FaProjectDiagram, FaTasks, FaStar, FaUsers, FaBell, FaArrowRight, FaSignOutAlt } from 'react-icons/fa';
+import JoinRequestsPanel from '../components/JoinRequestsPanel';
 import './Dashboard.css';
 
 const Dashboard = React.memo(() => {
@@ -151,6 +152,15 @@ const Dashboard = React.memo(() => {
                         </div>
                     </section>
                 </div>
+
+                {/* Join Requests Panel — visible to project owners only */}
+                {user && (
+                    <JoinRequestsPanel
+                        projects={myProjects.filter(
+                            (p) => p && (p.owner === user.id || p.owner?.id === user.id)
+                        )}
+                    />
+                )}
             </div>
         </div>
     );

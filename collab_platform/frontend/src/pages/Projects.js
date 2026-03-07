@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { FaSearch, FaFilter, FaUsers, FaCode, FaStar } from 'react-icons/fa';
+import JoinRequestModal from '../components/JoinRequestModal';
 import './Projects.css';
 
 const Projects = React.memo(() => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchParams, setSearchParams] = useSearchParams();
+    const [joinTarget, setJoinTarget] = useState(null); // project to join
 
     const [filters, setFilters] = useState({
         search: searchParams.get('search') || '',
@@ -160,6 +162,18 @@ const Projects = React.memo(() => {
                                         {project.is_beginner_friendly && (
                                             <div className="beginner-badge">Beginner Friendly</div>
                                         )}
+
+                                        {project.visibility === 'public' && (
+                                            <button
+                                                className="btn btn-sm btn-join"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setJoinTarget(project);
+                                                }}
+                                            >
+                                                Request to Join
+                                            </button>
+                                        )}
                                     </Link>
                                 ))
                             ) : (
@@ -174,9 +188,20 @@ const Projects = React.memo(() => {
                     </>
                 )}
             </div>
+
+            {joinTarget && (
+                <JoinRequestModal
+                    project={joinTarget}
+                    onClose={() => setJoinTarget(null)}
+                    onSuccess={() => {
+                        setJoinTarget(null);
+                        alert('Join request sent! The project owner will review it.');
+                    }}
+                />
+            )}
         </div>
     );
 });
 
-Projects.displayName = 'Projects'; 
+Projects.displayName = 'Projects';
 export default Projects;

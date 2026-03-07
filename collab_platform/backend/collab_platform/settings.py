@@ -14,6 +14,7 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -143,10 +144,10 @@ ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 SOCIAL_AUTH_GITHUB_KEY = os.environ.get('GITHUB_CLIENT_ID', '')
 SOCIAL_AUTH_GITHUB_SECRET = os.environ.get('GITHUB_CLIENT_SECRET', '')
 
-# Channels settings - Using Redis for production
+# Channels settings - Development fallback
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # Fallback for development
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
     }
 }
 

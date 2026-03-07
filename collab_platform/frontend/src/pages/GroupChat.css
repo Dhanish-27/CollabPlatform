@@ -1,51 +1,327 @@
-/* WhatsApp-like Chat Styles */
+/* ============================================================
+   GroupChat — strict Black & White monochrome theme
+   Colors used: #000, #111, #222, #444, #888, #ccc, #e8e8e8, #f4f4f4, #fff
+   ============================================================ */
 
-/* Chat Sidebar */
-.wp-chat-sidebar {
+/* ── Layout ─────────────────────────────────────────── */
+.wp-container {
+    display: flex;
+    height: calc(100vh - 60px);
+    background: #fff;
+    color: #111;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow: hidden;
+    border-top: 1px solid #e8e8e8;
+}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+.wp-sidebar {
+    width: 340px;
+    min-width: 260px;
+    max-width: 380px;
+    border-right: 1.5px solid #e8e8e8;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    overflow: hidden;
+}
+
+.wp-sidebar-header {
+    padding: 16px;
+    border-bottom: 1.5px solid #e8e8e8;
     background: #fff;
 }
 
-/* Chat Header Row */
-.wp-sidebar-header-row {
+.wp-sidebar-header-row,
+.wp-sidebar-header-top {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.wp-sidebar-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    color: #111;
+    letter-spacing: -0.3px;
 }
 
 .wp-back-btn {
     background: none;
     border: none;
-    font-size: 18px;
-    color: #54656f;
     cursor: pointer;
-    padding: 8px;
+    color: #111;
+    font-size: 1rem;
+    padding: 4px 8px 4px 0;
+    display: flex;
+    align-items: center;
+}
+
+.wp-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    font-size: 1.1rem;
+    padding: 6px;
     border-radius: 50%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
+    transition: background 0.15s, color 0.15s;
 }
 
-.wp-back-btn:hover {
+.wp-icon-btn:hover {
+    background: #f4f4f4;
+    color: #111;
+}
+
+/* Search */
+.wp-search-container {
+    display: flex;
+    align-items: center;
+    background: #f4f4f4;
+    border: 1px solid #e8e8e8;
+    border-radius: 20px;
+    padding: 6px 12px;
+    gap: 8px;
+}
+
+.wp-search-icon {
+    color: #888;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.wp-search-input {
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    color: #111;
+    flex: 1;
+    min-width: 0;
+}
+
+.wp-search-input::placeholder {
+    color: #aaa;
+}
+
+/* Chat list */
+.wp-chats-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #e8e8e8 transparent;
+}
+
+.wp-chats-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.wp-chats-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.wp-chats-list::-webkit-scrollbar-thumb {
     background: #e8e8e8;
+    border-radius: 4px;
 }
 
-/* Chat Main Area */
-.wp-chat-main {
+.wp-chat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f4f4f4;
+    transition: background 0.12s;
+}
+
+.wp-chat-item:hover {
+    background: #f8f8f8;
+}
+
+.wp-chat-item-active {
+    background: #f0f0f0;
+    border-left: 3px solid #111;
+}
+
+/* Avatar */
+.wp-chat-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.wp-chat-avatar img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e8e8e8;
+}
+
+.wp-avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #111;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.wp-online-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #111;
+    border: 2px solid #fff;
+}
+
+/* Chat item info */
+.wp-chat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.wp-chat-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3px;
+}
+
+.wp-chat-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wp-chat-time {
+    font-size: 0.75rem;
+    color: #888;
+    white-space: nowrap;
+    margin-left: 8px;
+}
+
+.wp-chat-preview-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.wp-chat-preview {
+    font-size: 0.82rem;
+    color: #888;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wp-status-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 999px;
+    border: 1px solid #ccc;
+    color: #555;
+    white-space: nowrap;
+    text-transform: capitalize;
+}
+
+/* Empty state */
+.wp-empty-state {
     display: flex;
     flex-direction: column;
-    background: #efeae2;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    gap: 12px;
+    color: #aaa;
+    text-align: center;
 }
 
-/* Chat Header */
+.wp-empty-icon {
+    font-size: 2.5rem;
+    color: #ddd;
+}
+
+.wp-empty-state p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.wp-btn-link {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #111;
+    font-size: 0.85rem;
+    text-decoration: underline;
+}
+
+/* ── Main chat area ───────────────────────────────────── */
+.wp-main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    overflow: hidden;
+}
+
+/* Welcome screen (Groups list page) */
+.wp-welcome-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: #888;
+    background: #fafafa;
+}
+
+.wp-welcome-icon {
+    font-size: 4rem;
+    color: #ddd;
+}
+
+.wp-welcome-screen h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+.wp-welcome-screen p {
+    font-size: 0.95rem;
+    color: #aaa;
+    margin: 0;
+}
+
+/* ── Chat header ─────────────────────────────────────── */
 .wp-chat-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 10px 15px;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1.5px solid #e8e8e8;
     background: #fff;
-    border-bottom: 1px solid #e8e8e8;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    min-height: 64px;
 }
 
 .wp-chat-header-left {
@@ -53,11 +329,6 @@
     align-items: center;
     gap: 12px;
     cursor: pointer;
-    flex: 1;
-}
-
-.wp-chat-header-left:hover .wp-chat-title {
-    color: #128c7e;
 }
 
 .wp-chat-header-info {
@@ -66,54 +337,53 @@
 }
 
 .wp-chat-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111;
     margin: 0;
-    transition: color 0.2s;
 }
 
 .wp-chat-subtitle {
-    font-size: 13px;
-    color: #667781;
+    font-size: 0.78rem;
+    color: #888;
     margin: 0;
 }
 
 .wp-chat-header-actions {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
 }
 
 .wp-header-btn {
     background: none;
     border: none;
-    font-size: 18px;
-    color: #54656f;
     cursor: pointer;
-    padding: 10px;
+    color: #555;
+    font-size: 1rem;
+    padding: 8px;
     border-radius: 50%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
+    transition: background 0.15s, color 0.15s;
 }
 
 .wp-header-btn:hover {
-    background: #e8e8e8;
+    background: #f4f4f4;
+    color: #111;
 }
 
-/* Messages Container */
+/* ── Messages area ────────────────────────────────────── */
 .wp-messages-container {
     flex: 1;
     overflow-y: auto;
     position: relative;
-    display: flex;
-    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: #e8e8e8 transparent;
 }
 
 .wp-messages-container::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
 
 .wp-messages-container::-webkit-scrollbar-track {
@@ -121,88 +391,39 @@
 }
 
 .wp-messages-container::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
+    background: #e8e8e8;
+    border-radius: 4px;
 }
 
-/* Chat Background Pattern */
 .wp-chat-background {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d1d7db' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    opacity: 0.5;
+    inset: 0;
+    background: #f8f8f8;
+    background-image:
+        repeating-linear-gradient(45deg,
+            transparent,
+            transparent 40px,
+            rgba(0, 0, 0, 0.015) 40px,
+            rgba(0, 0, 0, 0.015) 80px);
+    z-index: 0;
     pointer-events: none;
 }
 
-/* Messages List */
 .wp-messages-list {
-    flex: 1;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
     position: relative;
     z-index: 1;
-}
-
-/* Date Divider */
-.wp-date-divider {
+    padding: 24px 20px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 15px 0;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 100%;
 }
 
-.wp-date-divider span {
-    background: #e7f7ee;
-    color: #1a1a1a;
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-/* Messages */
-.wp-message {
-    display: flex;
-    margin: 2px 0;
-}
-
-.wp-message-incoming {
-    justify-content: flex-start;
-}
-
-.wp-message-outgoing {
-    justify-content: flex-end;
-}
-
-.wp-message-bubble {
-    max-width: 65%;
-    padding: 8px 12px;
-    border-radius: 7.5px;
-    position: relative;
-    word-wrap: break-word;
-}
-
-.wp-message-incoming .wp-message-bubble {
-    background: #fff;
-    border-top-left-radius: 0;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-}
-
-.wp-message-outgoing .wp-message-bubble {
-    background: #d9fdd3;
-    border-top-right-radius: 0;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-}
-
-/* Welcome Message */
+/* Welcome message */
 .wp-message-welcome {
+    display: flex;
     justify-content: center;
-    margin: 20px 0;
+    margin-bottom: 16px;
 }
 
 .wp-welcome-content {
@@ -210,42 +431,94 @@
     align-items: center;
     gap: 10px;
     background: #fff;
-    padding: 12px 20px;
-    border-radius: 10px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    max-width: 80%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.8rem;
+    color: #888;
+    max-width: 420px;
     text-align: center;
 }
 
 .wp-welcome-icon {
-    color: #128c7e;
-    font-size: 18px;
+    color: #aaa;
+    font-size: 1rem;
     flex-shrink: 0;
 }
 
-.wp-welcome-content p {
-    margin: 0;
-    font-size: 14px;
-    color: #1a1a1a;
+/* Date divider */
+.wp-date-divider {
+    display: flex;
+    justify-content: center;
+    margin: 14px 0;
 }
 
-/* Message Sender Name */
+.wp-date-divider span {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    color: #888;
+    padding: 3px 14px;
+    letter-spacing: 0.3px;
+}
+
+/* Messages */
+.wp-message {
+    display: flex;
+    max-width: 72%;
+}
+
+.wp-message-outgoing {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.wp-message-incoming {
+    align-self: flex-start;
+}
+
+/* Bubble */
+.wp-message-bubble {
+    border-radius: 12px;
+    padding: 8px 14px;
+    position: relative;
+    max-width: 100%;
+    word-break: break-word;
+}
+
+.wp-message-outgoing .wp-message-bubble {
+    background: #111;
+    color: #fff;
+    border-bottom-right-radius: 3px;
+}
+
+.wp-message-incoming .wp-message-bubble {
+    background: #fff;
+    color: #111;
+    border: 1.5px solid #e8e8e8;
+    border-bottom-left-radius: 3px;
+}
+
+/* Sender name (group messages from others) */
 .wp-message-sender {
-    font-size: 13px;
-    font-weight: 600;
-    color: #128c7e;
-    margin-bottom: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 3px;
+    letter-spacing: 0.2px;
 }
 
-/* Message Text */
+.wp-message-outgoing .wp-message-sender {
+    display: none;
+}
+
 .wp-message-text {
-    font-size: 14.2px;
-    line-height: 19px;
-    color: #1a1a1a;
-    white-space: pre-wrap;
+    font-size: 0.92rem;
+    line-height: 1.45;
 }
 
-/* Message Meta (Time & Status) */
+/* Meta (time + status) */
 .wp-message-meta {
     display: flex;
     align-items: center;
@@ -255,287 +528,342 @@
 }
 
 .wp-message-time {
-    font-size: 11px;
-    color: #667781;
+    font-size: 0.68rem;
+    opacity: 0.6;
 }
 
 .wp-message-status {
     display: flex;
     align-items: center;
+    font-size: 0.7rem;
 }
 
-.wp-message-status .wp-pending {
-    color: #667781;
-    font-size: 12px;
-}
-
-.wp-message-status .wp-delivered {
-    color: #128c7e;
-    font-size: 12px;
-}
-
-/* Message Status Icons - WhatsApp Style */
+/* Status icons */
 .wp-status-icon {
-    font-size: 12px;
-    margin-left: 4px;
+    font-size: 0.7rem;
 }
 
 .wp-status-icon.wp-pending {
-    color: #667781;
-    /* Gray - pending */
+    color: #888;
 }
 
 .wp-status-icon.wp-sent {
-    color: #667781;
-    /* Gray - sent (single check) */
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .wp-status-icon.wp-delivered {
-    color: #128c7e;
-    /* Teal - delivered (double check) */
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .wp-status-icon.wp-read {
-    color: #34b7f1;
-    /* Blue - read (double blue check) */
+    color: #fff;
 }
 
-.wp-status-icon.wp-queued {
-    color: #f0a500;
-    /* Orange - queued for offline delivery */
+.wp-message-incoming .wp-status-icon {
+    color: #888;
 }
 
-/* Connection Status Banner */
-.wp-connection-banner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    text-align: center;
-}
-
-.wp-connection-banner.wp-status-connecting {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.wp-connection-banner.wp-status-reconnecting {
-    background: #ffeeba;
-    color: #856404;
-}
-
-.wp-connection-banner.wp-status-disconnected {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.wp-connection-icon {
-    font-size: 12px;
-}
-
-/* Online Indicator */
-.wp-online-indicator {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 12px;
-    height: 12px;
-    background: #4ac959;
-    border: 2px solid #fff;
-    border-radius: 50%;
-}
-
-/* Typing Indicator */
-.wp-typing-message {
-    animation: fadeIn 0.3s ease;
-}
-
+/* Typing indicator */
 .wp-typing-bubble {
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 12px 16px !important;
-    min-width: 60px;
+    padding: 10px 16px !important;
+    min-width: 56px;
 }
 
 .wp-typing-dot {
-    width: 8px;
-    height: 8px;
-    background: #667781;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    animation: typingBounce 1.4s infinite ease-in-out both;
-}
-
-.wp-typing-dot:nth-child(1) {
-    animation-delay: -0.32s;
+    background: #888;
+    animation: typingPulse 1.2s infinite;
 }
 
 .wp-typing-dot:nth-child(2) {
-    animation-delay: -0.16s;
+    animation-delay: 0.2s;
 }
 
-@keyframes typingBounce {
+.wp-typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typingPulse {
 
     0%,
-    80%,
+    60%,
     100% {
-        transform: scale(0.6);
-        opacity: 0.5;
-    }
-
-    40% {
+        opacity: 0.3;
         transform: scale(1);
+    }
+
+    30% {
         opacity: 1;
+        transform: scale(1.25);
     }
 }
 
-/* Presence text in chat header */
-.wp-chat-subtitle.wp-status-online {
-    color: #4ac959;
-}
-
-.wp-chat-subtitle.wp-status-typing {
-    color: #128c7e;
-    font-style: italic;
-}
-
-/* Chat sidebar online indicator */
-.wp-chat-item-active .wp-chat-avatar .wp-online-indicator {
-    width: 14px;
-    height: 14px;
-    bottom: 0;
-    right: 0;
-    border-width: 2px;
-}
-
-/* Disable send button when disconnected */
-.wp-send-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Message Input Container */
+/* ── Message input ────────────────────────────────────── */
 .wp-message-input-container {
     display: flex;
     align-items: flex-end;
-    padding: 8px 12px;
+    gap: 6px;
+    padding: 12px 16px;
+    border-top: 1.5px solid #e8e8e8;
     background: #fff;
-    border-top: 1px solid #e8e8e8;
-    gap: 8px;
 }
 
 .wp-input-btn {
     background: none;
     border: none;
-    font-size: 22px;
-    color: #54656f;
     cursor: pointer;
+    color: #888;
+    font-size: 1.1rem;
     padding: 8px;
     border-radius: 50%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
 }
 
 .wp-input-btn:hover {
-    background: #e8e8e8;
+    color: #111;
+    background: #f4f4f4;
 }
 
 .wp-input-wrapper {
     flex: 1;
+    background: #f4f4f4;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 22px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    transition: border-color 0.15s;
+}
+
+.wp-input-wrapper:focus-within {
+    border-color: #111;
     background: #fff;
-    border-radius: 20px;
-    border: 1px solid #e8e8e8;
-    padding: 8px 12px;
 }
 
 .wp-message-input {
     width: 100%;
+    background: none;
     border: none;
     outline: none;
-    font-size: 15px;
-    font-family: inherit;
     resize: none;
-    min-height: 20px;
-    max-height: 100px;
-    background: transparent;
+    font-size: 0.92rem;
+    color: #111;
+    font-family: inherit;
+    line-height: 1.45;
+    max-height: 120px;
+    overflow-y: auto;
 }
 
 .wp-message-input::placeholder {
-    color: #aebac1;
+    color: #aaa;
 }
 
 .wp-send-btn {
-    background: #128c7e;
-    border: none;
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
+    background: #111;
+    color: #fff;
+    border: none;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s;
-    color: #fff;
-    font-size: 16px;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: background 0.15s, transform 0.1s;
 }
 
 .wp-send-btn:hover:not(:disabled) {
-    background: #25d366;
+    background: #333;
+    transform: scale(1.05);
 }
 
 .wp-send-btn:disabled {
     background: #e8e8e8;
-    color: #aebac1;
+    color: #bbb;
     cursor: not-allowed;
+    transform: none;
 }
 
-/* Chat Error */
+/* ── Connection Toast (centered popup) ───────────────── */
+.ws-toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    animation: toastSlideUp 0.25s ease;
+    white-space: nowrap;
+}
+
+@keyframes toastSlideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.ws-toast-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.ws-toast-connecting {
+    background: #111;
+    color: #fff;
+}
+
+.ws-toast-connecting .ws-toast-dot {
+    background: #fff;
+    animation: dotBlink 1s infinite;
+}
+
+.ws-toast-reconnecting {
+    background: #444;
+    color: #fff;
+}
+
+.ws-toast-reconnecting .ws-toast-dot {
+    background: #fff;
+    animation: dotBlink 0.6s infinite;
+}
+
+.ws-toast-disconnected {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+}
+
+.ws-toast-disconnected .ws-toast-dot {
+    background: #111;
+}
+
+@keyframes dotBlink {
+
+    0%,
+    100% {
+        opacity: 0.2;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* ── Loading / Error states ───────────────────────────── */
+.wp-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 16px;
+    color: #888;
+}
+
+.wp-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e8e8e8;
+    border-top-color: #111;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .wp-chat-error {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
-    width: 100%;
-    gap: 20px;
+    gap: 16px;
 }
 
 .wp-chat-error p {
-    color: #667781;
-    font-size: 16px;
+    color: #555;
+    margin: 0;
 }
 
 .wp-chat-error button {
-    background: #128c7e;
+    background: #111;
     color: #fff;
     border: none;
-    padding: 10px 20px;
-    border-radius: 20px;
+    padding: 8px 20px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    transition: background 0.2s;
+    font-size: 0.9rem;
 }
 
-.wp-chat-error button:hover {
-    background: #25d366;
+/* ── Scroll to bottom btn ─────────────────────────────── */
+.wp-scroll-btn {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #111;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    transition: background 0.15s;
 }
 
-/* Responsive */
+.wp-scroll-btn:hover {
+    background: #333;
+}
+
+/* ── Responsive ───────────────────────────────────────── */
 @media (max-width: 768px) {
-    .wp-message-bubble {
-        max-width: 80%;
+    .wp-sidebar {
+        display: none;
     }
 
-    .wp-chat-header {
-        padding: 8px 10px;
-    }
-
-    .wp-message-input-container {
-        padding: 6px 8px;
+    .wp-container.show-sidebar .wp-sidebar {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
     }
 }

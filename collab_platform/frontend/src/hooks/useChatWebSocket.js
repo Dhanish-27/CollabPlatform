@@ -101,14 +101,13 @@ export const useChatWebSocket = (projectId, user) => {
                 return;
             }
 
-            // Build WebSocket URL
-            // Note: In production, this should be wss:// for HTTPS
+            // Build WebSocket URL — JWT token passed as query param for Channels auth
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${wsProtocol}//${window.location.host}/ws/chat/?project_id=${projectId}`;
+            // Bypass React proxy in dev to avoid dropped WS headers (causing Daphne Hixie76 error)
+            const host = process.env.NODE_ENV === 'development' ? '127.0.0.1:8000' : window.location.host;
+            const wsUrl = `${wsProtocol}//${host}/ws/chat/?project_id=${projectId}&token=${token}`;
 
             const ws = new WebSocket(wsUrl);
-
-            // Set authentication header via query param (Channels handles auth from scope)
             ws.binaryType = 'arraybuffer';
 
             ws.onopen = () => {
@@ -117,14 +116,13 @@ export const useChatWebSocket = (projectId, user) => {
                 setConnectionStatus('connected');
                 reconnectAttemptRef.current = 0;
 
-                // Start ping interval
+                // Start ping interval (uses wsRef directly, not isConnected state)
                 startPingInterval();
 
-                // Request sync for any missed messages
-                requestSync();
-
-                // Resend any pending messages
+                // Resend any locally-pending messages (uses wsRef directly)
                 resendPendingMessages();
+                // Note: pending messages from the server are delivered automatically
+                // by the consumer on connect — no sync_request needed.
             };
 
             ws.onmessage = (event) => {

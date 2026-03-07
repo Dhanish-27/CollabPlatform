@@ -1,158 +1,150 @@
-/* WhatsApp-like Groups Page Styles */
+/* ============================================================
+   Groups list page — Black & White monochrome theme
+   ============================================================ */
 
-/* Main Container */
 .wp-container {
     display: flex;
     height: calc(100vh - 60px);
     background: #fff;
+    color: #111;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     overflow: hidden;
+    border-top: 1px solid #e8e8e8;
 }
 
 /* Sidebar */
 .wp-sidebar {
-    width: 400px;
-    min-width: 400px;
-    border-right: 1px solid #e8e8e8;
+    width: 340px;
+    min-width: 260px;
+    max-width: 380px;
+    border-right: 1.5px solid #e8e8e8;
     display: flex;
     flex-direction: column;
     background: #fff;
+    overflow: hidden;
 }
 
-@media (max-width: 768px) {
-    .wp-sidebar {
-        width: 100%;
-        min-width: 100%;
-    }
-}
-
-/* Sidebar Header */
 .wp-sidebar-header {
-    background: #f0f2f5;
-    padding: 15px;
-    border-bottom: 1px solid #e8e8e8;
+    padding: 16px;
+    border-bottom: 1.5px solid #e8e8e8;
 }
 
 .wp-sidebar-header-top {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    justify-content: space-between;
+    margin-bottom: 10px;
 }
 
-.wp-sidebar-header-top h2 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #1a1a1a;
+.wp-sidebar-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
     margin: 0;
+    color: #111;
 }
 
 .wp-icon-btn {
     background: none;
     border: none;
-    font-size: 20px;
-    color: #54656f;
     cursor: pointer;
-    padding: 8px;
+    color: #555;
+    font-size: 1.1rem;
+    padding: 6px;
     border-radius: 50%;
-    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    transition: background 0.15s, color 0.15s;
 }
 
 .wp-icon-btn:hover {
-    background: #e8e8e8;
+    background: #f4f4f4;
+    color: #111;
 }
 
-/* Search Container */
 .wp-search-container {
-    position: relative;
-    background: #fff;
-    border-radius: 8px;
-    padding: 8px 12px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    background: #f4f4f4;
+    border: 1px solid #e8e8e8;
+    border-radius: 20px;
+    padding: 6px 12px;
+    gap: 8px;
 }
 
 .wp-search-icon {
-    position: absolute;
-    left: 22px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #667781;
-    font-size: 14px;
-}
-
-.wp-search-input {
-    width: 100%;
-    padding: 8px 8px 8px 30px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    background: #fff;
-    outline: none;
-}
-
-.wp-search-input::placeholder {
-    color: #667781;
-}
-
-/* Chats List */
-.wp-chats-list {
-    flex: 1;
-    overflow-y: auto;
-}
-
-.wp-chats-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.wp-chats-list::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.wp-chats-list::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
-}
-
-/* Chat Item */
-.wp-chat-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 15px;
-    cursor: pointer;
-    transition: background 0.15s;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.wp-chat-item:hover {
-    background: #f5f6f7;
-}
-
-.wp-chat-item:active {
-    background: #e8e8e8;
-}
-
-/* Chat Avatar */
-.wp-chat-avatar {
-    position: relative;
-    margin-right: 15px;
+    color: #888;
+    font-size: 0.85rem;
     flex-shrink: 0;
 }
 
-.wp-chat-avatar img,
-.wp-avatar-placeholder {
-    width: 50px;
-    height: 50px;
+.wp-search-input {
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    color: #111;
+    flex: 1;
+    min-width: 0;
+}
+
+.wp-search-input::placeholder {
+    color: #aaa;
+}
+
+.wp-chats-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #e8e8e8 transparent;
+}
+
+.wp-chats-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.wp-chats-list::-webkit-scrollbar-thumb {
+    background: #e8e8e8;
+    border-radius: 4px;
+}
+
+.wp-chat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f4f4f4;
+    transition: background 0.12s;
+}
+
+.wp-chat-item:hover {
+    background: #f8f8f8;
+}
+
+.wp-chat-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.wp-chat-avatar img {
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid #e8e8e8;
 }
 
 .wp-avatar-placeholder {
-    background: linear-gradient(135deg, #25d366, #128c7e);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #111;
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    font-weight: 600;
+    font-size: 1.2rem;
+    font-weight: 700;
 }
 
 .wp-online-indicator {
@@ -161,12 +153,11 @@
     right: 2px;
     width: 12px;
     height: 12px;
-    background: #25d366;
-    border: 2px solid #fff;
     border-radius: 50%;
+    background: #111;
+    border: 2px solid #fff;
 }
 
-/* Chat Info */
 .wp-chat-info {
     flex: 1;
     min-width: 0;
@@ -174,15 +165,15 @@
 
 .wp-chat-header-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 4px;
+    justify-content: space-between;
+    margin-bottom: 3px;
 }
 
 .wp-chat-name {
-    font-size: 16px;
-    font-weight: 500;
-    color: #1a1a1a;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -190,185 +181,126 @@
 }
 
 .wp-chat-time {
-    font-size: 12px;
-    color: #667781;
-    flex-shrink: 0;
-    margin-left: 10px;
+    font-size: 0.75rem;
+    color: #888;
+    white-space: nowrap;
 }
 
 .wp-chat-preview-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    gap: 8px;
 }
 
 .wp-chat-preview {
-    font-size: 14px;
-    color: #667781;
+    font-size: 0.82rem;
+    color: #888;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex: 1;
 }
 
 .wp-status-badge {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 12px;
-    background: #e7f7ee;
-    color: #1a1a1a;
-    flex-shrink: 0;
-    margin-left: 8px;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 999px;
+    border: 1px solid #ccc;
+    color: #555;
+    white-space: nowrap;
     text-transform: capitalize;
 }
 
-.wp-status-badge.active {
-    background: #e7f7ee;
-    color: #128c7e;
+/* Empty state */
+.wp-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    gap: 12px;
+    color: #aaa;
+    text-align: center;
 }
 
-.wp-status-badge.idea {
-    background: #fff3e0;
-    color: #f57c00;
+.wp-empty-icon {
+    font-size: 2.5rem;
+    color: #ddd;
 }
 
-.wp-status-badge.accepting {
-    background: #e3f2fd;
-    color: #1976d2;
+.wp-empty-state p {
+    margin: 0;
+    font-size: 0.9rem;
 }
 
-/* Main Area */
+.wp-btn-link {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #111;
+    font-size: 0.85rem;
+    text-decoration: underline;
+}
+
+/* Main area — welcome screen */
 .wp-main-area {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: #efeae2;
+    background: #fafafa;
+    overflow: hidden;
 }
 
-/* Welcome Screen */
 .wp-welcome-screen {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: #f8f9fa;
-    padding: 40px;
-    text-align: center;
+    gap: 16px;
 }
 
-.wp-welcome-icon {
-    width: 120px;
-    height: 120px;
-    background: linear-gradient(135deg, #25d366, #128c7e);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
-}
-
-.wp-welcome-icon svg {
-    width: 50px;
-    height: 50px;
-    color: #fff;
+.wp-welcome-screen .wp-welcome-icon {
+    font-size: 4rem;
+    color: #ddd;
 }
 
 .wp-welcome-screen h1 {
-    font-size: 32px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 10px;
-}
-
-.wp-welcome-screen p {
-    font-size: 16px;
-    color: #667781;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111;
     margin: 0;
 }
 
-/* Empty State */
-.wp-empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    text-align: center;
+.wp-welcome-screen p {
+    font-size: 0.95rem;
+    color: #aaa;
+    margin: 0;
 }
 
-.wp-empty-icon {
-    font-size: 48px;
-    color: #cbd5e1;
-    margin-bottom: 20px;
-}
-
-.wp-empty-state p {
-    font-size: 16px;
-    color: #667781;
-    margin: 0 0 15px;
-}
-
-.wp-btn-link {
-    background: none;
-    border: none;
-    color: #128c7e;
-    font-size: 14px;
-    cursor: pointer;
-    text-decoration: underline;
-}
-
-/* Loading State */
+/* Loading */
 .wp-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
-    width: 100%;
-    background: #fff;
+    gap: 16px;
+    color: #888;
 }
 
 .wp-spinner {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border: 3px solid #e8e8e8;
-    border-top-color: #25d366;
+    border-top-color: #111;
     border-radius: 50%;
-    animation: wp-spin 1s linear infinite;
-    margin-bottom: 15px;
+    animation: spin 0.7s linear infinite;
 }
 
-@keyframes wp-spin {
+@keyframes spin {
     to {
         transform: rotate(360deg);
-    }
-}
-
-.wp-loading p {
-    color: #667781;
-    font-size: 14px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .wp-sidebar {
-        width: 100%;
-    }
-
-    .wp-welcome-screen h1 {
-        font-size: 24px;
-    }
-
-    .wp-welcome-icon {
-        width: 80px;
-        height: 80px;
-    }
-
-    .wp-welcome-icon svg {
-        width: 35px;
-        height: 35px;
     }
 }
