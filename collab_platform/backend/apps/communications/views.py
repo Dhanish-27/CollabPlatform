@@ -2,12 +2,47 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from django.db.models import Q
-from .models import ChatMessage, Thread, ThreadReply, Announcement
+from .models import ChatMessage, Thread, ThreadReply, Announcement, Message
 from .serializers import (
     ChatMessageSerializer, ThreadSerializer, ThreadDetailSerializer,
-    ThreadReplySerializer, AnnouncementSerializer
+    ThreadReplySerializer, AnnouncementSerializer, MessageSerializer
 )
+
+
+class GroupMessageListView(APIView):
+    """
+    GET /api/communications/groups/<group_id>/messages/
+    Returns paginated message history ordered by created_at descending.
+    Query params:
+      - limit (default=50)
+      - before_id (optional): return messages older than this message ID
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, group_id):
+        limit = min(int(request.query_params.get('limit', 50)), 100)
+        before_id = request.query_params.get('before_id')
+
+        qs = Message.objects.filter(group_id=group_id).select_related('sender')
+
+        if before_id:
+            try:
+                before_id = int(before_id)
+                qs = qs.filter(id__lt=before_id)
+            except (ValueError, TypeError):
+                pass
+
+        messages = list(qs[:limit])
+
+        next_before_id = messages[-1].id if len(messages) == limit else None
+
+        serializer = MessageSerializer(messages, many=True)
+        return Response({
+            'messages': serializer.data,
+            'next_before_id': next_before_id,
+        })
 
 
 class ChatMessageViewSet(viewsets.ModelViewSet):

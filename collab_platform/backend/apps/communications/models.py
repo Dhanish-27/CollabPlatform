@@ -2,6 +2,31 @@ from django.db import models
 from django.conf import settings
 
 
+class Message(models.Model):
+    """Persistent chat messages for group/project chats."""
+    group = models.ForeignKey(
+        'projects.Project',
+        on_delete=models.CASCADE,
+        related_name='messages'
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sent_messages'
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['group', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.sender.username}: {self.content[:50]}"
+
+
 class ChatMessage(models.Model):
     """Real-time chat messages for projects."""
     project = models.ForeignKey(

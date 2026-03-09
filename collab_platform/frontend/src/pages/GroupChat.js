@@ -143,6 +143,12 @@ const GroupChat = () => {
     const [showInfoPanel, setShowInfoPanel] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
+    // Message history state
+    const [historyMessages, setHistoryMessages] = useState([]);
+    const [nextBeforeId, setNextBeforeId] = useState(null);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [hasMoreHistory, setHasMoreHistory] = useState(true);
+
     // Message input state
     const [newMessage, setNewMessage] = useState('');
 
@@ -155,7 +161,7 @@ const GroupChat = () => {
     const {
         isConnected,
         connectionStatus,
-        messages,
+        messages: wsMessages,
         typingUsers,
         onlineUsers,
         userPresence,
@@ -164,6 +170,16 @@ const GroupChat = () => {
         markMessagesAsRead,
         loadMessages
     } = useChatWebSocket(group?.id?.toString(), user);
+
+    // Merged messages: history (oldest first) + real-time WS messages
+    // History comes desc from API, reverse it; WS messages are appended live
+    const messages = React.useMemo(() => {
+        const historyReversed = [...historyMessages].reverse();
+        const historyIds = new Set(historyMessages.map(m => String(m.id)));
+        // WS messages that are NOT already in history (avoid dups when WS echoes a just-sent message)
+        const newWsOnly = wsMessages.filter(m => !historyIds.has(String(m.db_id)) && !historyIds.has(String(m.id)));
+        return [...historyReversed, ...newWsOnly];
+    }, [historyMessages, wsMessages]);
 
     // =========================================================================
     // DATA FETCHING
@@ -180,17 +196,44 @@ const GroupChat = () => {
         }
 
         try {
-            // First fetch the group to get the project ID
             const groupRes = await axios.get(`/api/projects/${id}/`);
             setGroup(groupRes.data);
-
-            // Messages are loaded via WebSocket hook
-            // This fetches from IndexedDB
         } catch (error) {
             console.error('Error fetching group:', error);
             navigate('/groups');
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Fetch latest 50 messages when group is loaded
+    useEffect(() => {
+        if (group?.id) {
+            fetchMessageHistory();
+        }
+    }, [group?.id]);
+
+    const fetchMessageHistory = async (beforeId = null) => {
+        if (loadingHistory) return;
+        setLoadingHistory(true);
+        try {
+            const params = { limit: 50 };
+            if (beforeId) params.before_id = beforeId;
+
+            const res = await axios.get(`/api/communications/groups/${group.id}/messages/`, { params });
+            const { messages: newMsgs, next_before_id } = res.data;
+
+            setHistoryMessages(prev => {
+                const existingIds = new Set(prev.map(m => m.id));
+                const unique = newMsgs.filter(m => !existingIds.has(m.id));
+                return beforeId ? [...prev, ...unique] : newMsgs;
+            });
+            setNextBeforeId(next_before_id);
+            setHasMoreHistory(!!next_before_id);
+        } catch (error) {
+            console.error('Error fetching message history:', error);
+        } finally {
+            setLoadingHistory(false);
         }
     };
 
@@ -202,9 +245,44 @@ const GroupChat = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
+    // Only auto-scroll when new WS messages arrive (not history loads)
+    const prevWsMessageCountRef = useRef(0);
     useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+        if (wsMessages.length > prevWsMessageCountRef.current) {
+            scrollToBottom();
+        }
+        prevWsMessageCountRef.current = wsMessages.length;
+    }, [wsMessages]);
+
+    // Initial scroll to bottom on first history load
+    useEffect(() => {
+        if (historyMessages.length > 0 && !loadingHistory) {
+            scrollToBottom();
+        }
+    }, [loading]);
+
+    // Scroll-up detection: load older messages when user scrolls near the top
+    const handleScroll = useCallback(() => {
+        const container = messageListRef.current;
+        if (!container) return;
+        if (container.scrollTop < 80 && hasMoreHistory && !loadingHistory && nextBeforeId) {
+            const prevScrollHeight = container.scrollHeight;
+            fetchMessageHistory(nextBeforeId).then(() => {
+                // Maintain scroll position after prepending old messages
+                requestAnimationFrame(() => {
+                    const newScrollHeight = container.scrollHeight;
+                    container.scrollTop = newScrollHeight - prevScrollHeight;
+                });
+            });
+        }
+    }, [hasMoreHistory, loadingHistory, nextBeforeId, group?.id]);
+
+    useEffect(() => {
+        const container = messageListRef.current;
+        if (!container) return;
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, [handleScroll]);
 
     // Mark incoming messages as read when scrolled into view
     useEffect(() => {
@@ -452,6 +530,19 @@ const GroupChat = () => {
                         <div className="wp-chat-background"></div>
 
                         <div className="wp-messages-list">
+                            {/* Load more history indicator */}
+                            {loadingHistory && (
+                                <div className="wp-loading-history">
+                                    <div className="wp-spinner-small"></div>
+                                    <span>Loading older messages...</span>
+                                </div>
+                            )}
+                            {!hasMoreHistory && historyMessages.length > 0 && (
+                                <div className="wp-history-start">
+                                    <span>No more messages</span>
+                                </div>
+                            )}
+
                             {/* Welcome Message */}
                             <div className="wp-message wp-message-welcome">
                                 <div className="wp-message-content wp-welcome-content">

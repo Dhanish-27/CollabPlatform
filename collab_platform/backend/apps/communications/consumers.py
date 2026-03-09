@@ -42,6 +42,21 @@ def get_project_member_ids(project_id):
 
 
 @database_sync_to_async
+def save_message_to_db(sender_id, project_id, content):
+    """Persist a Message to the database and return the created instance."""
+    from .models import Message
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    msg = Message.objects.create(
+        group_id=project_id,
+        sender_id=sender_id,
+        content=content,
+    )
+    # Re-fetch with select_related to get sender info
+    return Message.objects.select_related('sender').get(pk=msg.pk)
+
+
+@database_sync_to_async
 def create_pending_message(recipient_id, sender_id, project_id, message_id, content):
     """Persist a PendingMessage for an offline member."""
     from .models import PendingMessage
@@ -221,31 +236,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def _handle_chat_message(self, data):
         content = data.get('content', '').strip()
-        message_id = data.get('message_id') or f"msg_{datetime.utcnow().timestamp()}"
+        client_message_id = data.get('message_id') or f"msg_{datetime.utcnow().timestamp()}"
 
         if not content:
             return
 
-        timestamp = datetime.utcnow().isoformat()
-        sender_name = self.user.username or self.user.email
+        # Save to DB
+        saved_msg = await save_message_to_db(self.user.id, self.project_id, content)
+        timestamp = saved_msg.created_at.isoformat()
+        sender_name = saved_msg.sender.username or saved_msg.sender.email
 
         # Get all project member IDs
         member_ids = await get_project_member_ids(self.project_id)
-
         online_now = _get_online_set(self.project_id)
 
-        # Broadcast to all online members (including sender so they get confirmation)
+        # Broadcast structured payload to all online members
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'chat_message',
-                'message_id': message_id,
+                'db_id': saved_msg.id,
+                'message_id': client_message_id,
                 'content': content,
                 'sender_id': self.user.id,
                 'sender_name': sender_name,
                 'project_id': self.project_id,
                 'timestamp': timestamp,
-                'require_ack': False,  # live delivery — no ACK needed
+                'require_ack': False,
             }
         )
 
@@ -256,14 +273,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     recipient_id=uid,
                     sender_id=self.user.id,
                     project_id=self.project_id,
-                    message_id=message_id,
+                    message_id=client_message_id,
                     content=content,
                 )
 
         # Send ACK back to sender confirming server processed the message
         await self.send(json.dumps({
             'type': 'ack',
-            'message_id': message_id,
+            'message_id': client_message_id,
+            'db_id': saved_msg.id,
             'status': 'sent',
             'timestamp': timestamp,
         }))
@@ -324,6 +342,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """Forward chat_message event to WebSocket client."""
         await self.send(json.dumps({
             'type': 'chat_message',
+            'db_id': event.get('db_id'),
             'message_id': event['message_id'],
             'content': event['content'],
             'sender_id': event['sender_id'],

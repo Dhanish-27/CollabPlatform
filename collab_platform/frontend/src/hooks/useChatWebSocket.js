@@ -254,11 +254,12 @@ export const useChatWebSocket = (projectId, user) => {
      * Handle incoming chat message
      */
     const handleChatMessage = async (payload) => {
-        const { message_id, content, sender_id, sender_name, timestamp, require_ack } = payload;
+        const { db_id, message_id, content, sender_id, sender_name, timestamp, require_ack } = payload;
 
         // Create message object
         const message = {
             id: message_id,
+            db_id: db_id || null,
             localId: message_id,
             content,
             senderId: sender_id,

@@ -1,6 +1,26 @@
 from rest_framework import serializers
-from .models import ChatMessage, Thread, ThreadReply, Announcement
+from .models import ChatMessage, Thread, ThreadReply, Announcement, Message
 from apps.users.serializers import UserProfileSerializer
+
+
+class MessageSenderSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    username = serializers.CharField()
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ['id', 'content', 'sender', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def get_sender(self, obj):
+        return {
+            'id': obj.sender_id,
+            'username': obj.sender.username or obj.sender.email,
+        }
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):
