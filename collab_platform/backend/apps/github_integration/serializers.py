@@ -1,8 +1,47 @@
+import re
 from rest_framework import serializers
 from .models import (
-    GitHubRepository, GitHubCommit, GitHubPullRequest,
+    Group, GitHubRepository, GitHubCommit, GitHubPullRequest,
     GitHubIssue, ContributionAnalytics
 )
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    """Serializer for Group model."""
+    created_by_email = serializers.EmailField(source='created_by.email', read_only=True)
+    member_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Group
+        fields = [
+            'id', 'name', 'repo_name', 'github_repo_id', 'visibility',
+            'created_by', 'created_by_email', 'members', 'member_count', 'created_at'
+        ]
+        read_only_fields = ['id', 'github_repo_id', 'created_at']
+    
+    def get_member_count(self, obj):
+        return obj.members.count()
+
+
+class GroupCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating a Group with GitHub repository."""
+    members = serializers.ListField(
+        child=serializers.CharField(max_length=100),
+        required=False,
+        write_only=True
+    )
+    
+    class Meta:
+        model = Group
+        fields = ['name', 'repo_name', 'visibility', 'members']
+    
+    def validate_repo_name(self, value):
+        """Validate repo_name format."""
+        if not re.match(r'^[a-zA-Z0-9_-]+$', value):
+            raise serializers.ValidationError(
+                "Repository name can only contain letters, numbers, hyphens, and underscores"
+            )
+        return value.lower()
 
 
 class GitHubCommitSerializer(serializers.ModelSerializer):

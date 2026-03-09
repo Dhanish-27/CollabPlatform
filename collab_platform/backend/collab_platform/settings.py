@@ -4,8 +4,12 @@ Django settings for collab_platform project.
 import os
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
 
@@ -161,3 +165,8 @@ DEFAULT_FROM_EMAIL = 'noreply@collabplatform.com'
 # Celery settings (for background tasks)
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# GitHub Integration Configuration
+# Token must only be in .env file - never hardcode it!
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
+GITHUB_ORG_NAME = os.environ.get('GITHUB_ORG_NAME', '')
