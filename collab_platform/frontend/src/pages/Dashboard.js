@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { FaProjectDiagram, FaTasks, FaStar, FaUsers, FaBell, FaArrowRight, FaSignOutAlt } from 'react-icons/fa';
+import { FaProjectDiagram, FaTasks, FaStar, FaUsers, FaBell, FaArrowRight, FaSignOutAlt, FaEnvelope, FaCheckCircle, FaClock, FaMedal } from 'react-icons/fa';
 import JoinRequestsPanel from '../components/JoinRequestsPanel';
 import './Dashboard.css';
 
@@ -12,6 +12,7 @@ const Dashboard = React.memo(() => {
     const [myProjects, setMyProjects] = useState([]);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [unreadNotifications, setUnreadNotifications] = useState(0);
 
     useEffect(() => {
         fetchData();
@@ -19,12 +20,14 @@ const Dashboard = React.memo(() => {
 
     const fetchData = async () => {
         try {
-            const [projectsRes, statsRes] = await Promise.all([
+            const [projectsRes, statsRes, notificationsRes] = await Promise.all([
                 axios.get('/api/projects/my_projects/'),
-                axios.get('/api/analytics/dashboard/')
+                axios.get('/api/analytics/dashboard/'),
+                axios.get('/api/notifications/unread_count/').catch(() => ({ data: { count: 0 } }))
             ]);
             setMyProjects(projectsRes.data);
             setStats(statsRes.data);
+            setUnreadNotifications(notificationsRes.data.count || 0);
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
         } finally {
@@ -54,6 +57,7 @@ const Dashboard = React.memo(() => {
                     </div>
                 </div>
 
+                {/* Stats Grid - Enhanced with more metrics */}
                 <div className="stats-grid">
                     <div className="stat-card">
                         <div className="stat-icon"><FaProjectDiagram /></div>
@@ -85,6 +89,42 @@ const Dashboard = React.memo(() => {
                     </div>
                 </div>
 
+                {/* Additional Stats Row */}
+                <div className="stats-grid stats-secondary">
+                    <div className="stat-card stat-card-small">
+                        <div className="stat-icon stat-icon-small"><FaClock /></div>
+                        <div className="stat-content">
+                            <span className="stat-value">{stats?.assigned_tasks || 0}</span>
+                            <span className="stat-label">Tasks Assigned</span>
+                        </div>
+                    </div>
+                    <div className="stat-card stat-card-small">
+                        <div className="stat-icon stat-icon-small"><FaMedal /></div>
+                        <div className="stat-content">
+                            <span className="stat-value">{stats?.feedback_received || 0}</span>
+                            <span className="stat-label">Feedback Received</span>
+                        </div>
+                    </div>
+                    <div className="stat-card stat-card-small">
+                        <div className="stat-icon stat-icon-small"><FaEnvelope /></div>
+                        <div className="stat-content">
+                            <span className="stat-value">{unreadNotifications}</span>
+                            <span className="stat-label">Unread Notifications</span>
+                        </div>
+                    </div>
+                    <div className="stat-card stat-card-small">
+                        <div className="stat-icon stat-icon-small"><FaCheckCircle /></div>
+                        <div className="stat-content">
+                            <span className="stat-value">
+                                {stats?.assigned_tasks > 0
+                                    ? Math.round((stats?.completed_tasks / stats?.assigned_tasks) * 100)
+                                    : 0}%
+                            </span>
+                            <span className="stat-label">Completion Rate</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="dashboard-sections">
                     <section className="dashboard-section">
                         <div className="section-header">
@@ -96,22 +136,22 @@ const Dashboard = React.memo(() => {
 
                         <div className="projects-list">
                             {myProjects.length > 0 ? (
-                                myProjects.map((project) => (
+                                myProjects.slice(0, 5).map((project) => (
                                     <Link to={`/projects/${project.slug}`} key={project.id} className="project-item">
                                         <div className="project-info">
                                             <h3>{project.title}</h3>
                                             <span className={`status ${project.status}`}>
-                                                {project.status.replace('_', ' ')}
+                                                {project.status?.replace('_', ' ')}
                                             </span>
                                         </div>
                                         <div className="project-progress">
                                             <div className="progress-bar">
                                                 <div
                                                     className="progress-fill"
-                                                    style={{ width: `${project.completion_percentage}%` }}
+                                                    style={{ width: `${project.completion_percentage || 0}%` }}
                                                 />
                                             </div>
-                                            <span>{project.completion_percentage}% complete</span>
+                                            <span>{project.completion_percentage || 0}% complete</span>
                                         </div>
                                         <FaArrowRight className="arrow" />
                                     </Link>
@@ -125,6 +165,12 @@ const Dashboard = React.memo(() => {
                                 </div>
                             )}
                         </div>
+
+                        {myProjects.length > 5 && (
+                            <div className="view-all-link">
+                                <Link to="/projects">View all {myProjects.length} projects →</Link>
+                            </div>
+                        )}
                     </section>
 
                     <section className="dashboard-section">
@@ -145,9 +191,12 @@ const Dashboard = React.memo(() => {
                                 <FaStar />
                                 <span>View Profile</span>
                             </Link>
-                            <Link to="/notifications" className="action-card">
+                            <Link to="/notifications" className="action-card action-card-notification">
                                 <FaBell />
                                 <span>Notifications</span>
+                                {unreadNotifications > 0 && (
+                                    <span className="action-badge">{unreadNotifications}</span>
+                                )}
                             </Link>
                         </div>
                     </section>

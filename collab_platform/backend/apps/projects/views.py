@@ -566,3 +566,120 @@ class JoinRequestViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # This is handled by ProjectViewSet.join
         pass
+
+
+class InvitationViewSet(viewsets.ViewSet):
+    """ViewSet for handling project invitations."""
+    permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def my_invitations(self, request):
+        """Get all pending invitations for the current user."""
+        invitations = ProjectInvitation.objects.filter(
+            email=request.user.email,
+            is_used=False,
+            expires_at__gt=timezone.now()
+        ).select_related('project', 'invited_by')
+        
+        serializer = ProjectInvitationSerializer(invitations, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['post'])
+    def accept(self, request):
+        """Accept an invitation to join a project."""
+        token = request.data.get('token')
+        
+        if not token:
+            return Response(
+                {'error': 'Token is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            invitation = ProjectInvitation.objects.get(
+                token=token,
+                email=request.user.email,
+                is_used=False,
+                expires_at__gt=timezone.now()
+            )
+        except ProjectInvitation.DoesNotExist:
+            return Response(
+                {'error': 'Invalid or expired invitation'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Check if already a member
+        if ProjectMember.objects.filter(
+            project=invitation.project,
+            user=request.user
+        ).exists():
+            return Response(
+                {'error': 'You are already a member of this project'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Add user to project
+        ProjectMember.objects.create(
+            project=invitation.project,
+            user=request.user,
+            role=invitation.role
+        )
+        
+        # Mark invitation as used
+        invitation.is_used = True
+        invitation.save()
+        
+        # Notify the inviter
+        from apps.notifications.models import Notification
+        Notification.objects.create(
+            recipient=invitation.invited_by,
+            title='Invitation Accepted',
+            message=f"{request.user.email} has accepted your invitation to join {invitation.project.title}",
+            notification_type='invitation_accepted',
+            link=f'/projects/{invitation.project.slug}'
+        )
+        
+        return Response({
+            'message': 'Successfully joined the project',
+            'project': invitation.project.slug
+        })
+    
+    @action(detail=False, methods=['post'])
+    def decline(self, request):
+        """Decline an invitation to join a project."""
+        token = request.data.get('token')
+        
+        if not token:
+            return Response(
+                {'error': 'Token is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            invitation = ProjectInvitation.objects.get(
+                token=token,
+                email=request.user.email,
+                is_used=False,
+                expires_at__gt=timezone.now()
+            )
+        except ProjectInvitation.DoesNotExist:
+            return Response(
+                {'error': 'Invalid or expired invitation'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Mark invitation as used (declined)
+        invitation.is_used = True
+        invitation.save()
+        
+        # Notify the inviter
+        from apps.notifications.models import Notification
+        Notification.objects.create(
+            recipient=invitation.invited_by,
+            title='Invitation Declined',
+            message=f"{request.user.email} has declined your invitation to join {invitation.project.title}",
+            notification_type='invitation_declined',
+            link=f'/projects/{invitation.project.slug}'
+        )
+        
+        return Response({'message': 'Invitation declined'})

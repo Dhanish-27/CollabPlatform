@@ -10,6 +10,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { FaUser, FaCheck, FaTimes, FaClock, FaEnvelope } from 'react-icons/fa';
 import './JoinRequestsPanel.css';
 
 const JoinRequestsPanel = ({ projects = [] }) => {
@@ -38,6 +39,8 @@ const JoinRequestsPanel = ({ projects = [] }) => {
                 )
             );
             setRequests(results.flat().filter(Boolean));
+        } catch (error) {
+            console.error('Error fetching join requests:', error);
         } finally {
             setLoading(false);
         }
@@ -56,7 +59,18 @@ const JoinRequestsPanel = ({ projects = [] }) => {
             });
             // Remove from local list
             setRequests((prev) => prev.filter((r) => r.id !== requestId));
+
+            // Show success message
+            if (action === 'accept') {
+                alert('Join request accepted! The user has been added to the project.');
+            } else {
+                alert('Join request rejected.');
+            }
+
+            // Refresh the list
+            fetchRequests();
         } catch (err) {
+            console.error('Error handling join request:', err);
             alert(err.response?.data?.error || 'Action failed. Please try again.');
         } finally {
             setActionLoading(null);
@@ -66,8 +80,10 @@ const JoinRequestsPanel = ({ projects = [] }) => {
     if (loading) {
         return (
             <div className="jrp-container">
-                <h3 className="jrp-title">Join Requests</h3>
-                <p className="jrp-empty">Loading…</p>
+                <h3 className="jrp-title">
+                    <FaClock /> Join Requests
+                </h3>
+                <p className="jrp-empty">Loading requests...</p>
             </div>
         );
     }
@@ -75,33 +91,36 @@ const JoinRequestsPanel = ({ projects = [] }) => {
     return (
         <div className="jrp-container">
             <h3 className="jrp-title">
-                Join Requests
+                <FaEnvelope /> Join Requests
                 {requests.length > 0 && (
                     <span className="jrp-badge">{requests.length}</span>
                 )}
             </h3>
 
             {requests.length === 0 ? (
-                <p className="jrp-empty">No pending join requests.</p>
+                <p className="jrp-empty">No pending join requests for your projects.</p>
             ) : (
-                <ul className="jrp-list">
+                <div className="jrp-list">
                     {requests.map((req) => (
-                        <li key={req.id} className="jrp-item">
+                        <div key={req.id} className="jrp-item">
                             <div className="jrp-item-header">
-                                <span className="jrp-applicant">
-                                    {req.user?.username || req.user?.email || `User #${req.user}`}
-                                </span>
+                                <div className="jrp-applicant">
+                                    <FaUser className="user-icon" />
+                                    <span>{req.user?.username || req.user?.email || `User #${req.user}`}</span>
+                                </div>
                                 <span className="jrp-project-tag">{req.projectTitle}</span>
                             </div>
 
-                            <div className="jrp-role">
-                                Role preference:{' '}
-                                <strong>{req.role_preference || 'contributor'}</strong>
+                            <div className="jrp-details">
+                                <div className="jrp-role">
+                                    <strong>Role:</strong> {req.role_preference || 'contributor'}
+                                </div>
+                                {req.message && (
+                                    <div className="jrp-message">
+                                        <strong>Message:</strong> "{req.message}"
+                                    </div>
+                                )}
                             </div>
-
-                            {req.message && (
-                                <blockquote className="jrp-message">"{req.message}"</blockquote>
-                            )}
 
                             <div className="jrp-actions">
                                 <button
@@ -109,19 +128,27 @@ const JoinRequestsPanel = ({ projects = [] }) => {
                                     disabled={actionLoading === req.id}
                                     onClick={() => handleAction(req.projectId, req.id, 'accept')}
                                 >
-                                    {actionLoading === req.id ? '…' : 'Approve'}
+                                    {actionLoading === req.id ? (
+                                        <FaClock className="spin" />
+                                    ) : (
+                                        <FaCheck />
+                                    )} {actionLoading === req.id ? 'Processing...' : 'Accept'}
                                 </button>
                                 <button
                                     className="jrp-btn jrp-btn-reject"
                                     disabled={actionLoading === req.id}
                                     onClick={() => handleAction(req.projectId, req.id, 'reject')}
                                 >
-                                    {actionLoading === req.id ? '…' : 'Reject'}
+                                    {actionLoading === req.id ? (
+                                        <FaClock className="spin" />
+                                    ) : (
+                                        <FaTimes />
+                                    )} {actionLoading === req.id ? 'Processing...' : 'Reject'}
                                 </button>
                             </div>
-                        </li>
+                        </div>
                     ))}
-                </ul>
+                </div>
             )}
         </div>
     );

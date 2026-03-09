@@ -70,6 +70,20 @@
     margin-bottom: 48px;
 }
 
+.stats-secondary {
+    margin-bottom: 32px;
+}
+
+.stats-secondary .stat-card {
+    padding: 20px;
+}
+
+.stats-secondary .stat-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+}
+
 .stat-card {
     background: #ffffff;
     border: 1px solid #e0e0e0;
@@ -306,6 +320,45 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.action-card-notification {
+    position: relative;
+}
+
+.action-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: #000000;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-all-link {
+    text-align: center;
+    padding-top: 20px;
+    margin-top: 16px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.view-all-link a {
+    color: #000000;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.view-all-link a:hover {
+    text-decoration: underline;
 }
 
 /* Empty State */

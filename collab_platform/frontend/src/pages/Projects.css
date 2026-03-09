@@ -6,6 +6,46 @@
     padding: 40px 0 80px;
 }
 
+.projects-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 4px;
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
+.projects-tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666666;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    flex: 1;
+    justify-content: center;
+}
+
+.projects-tab:hover {
+    color: #000000;
+}
+
+.projects-tab.active {
+    background: #ffffff;
+    color: #000000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.projects-tab svg {
+    font-size: 16px;
+}
+
 .projects-header {
     text-align: center;
     margin-bottom: 48px;
@@ -234,6 +274,106 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.member-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    padding: 8px 14px;
+    background: #f5f5f5;
+    color: #333333;
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.member-badge svg {
+    color: #000000;
+}
+
+.project-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.project-actions .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    flex: 1;
+}
+
+.project-actions .btn-join {
+    background: #000000;
+    color: #ffffff;
+    border: 2px solid #000000;
+}
+
+.project-actions .btn-join:hover {
+    background: #333333;
+    border-color: #333333;
+}
+
+.project-actions .btn-view {
+    background: #ffffff;
+    color: #000000;
+    border: 2px solid #000000;
+}
+
+.project-actions .btn-view:hover {
+    background: #000000;
+    color: #ffffff;
+}
+
+.project-card .project-actions {
+    padding-top: 16px;
+}
+
+.project-card .project-actions a,
+.project-card .project-actions button {
+    margin: 0;
+}
+
+.projects-count {
+    font-size: 14px;
+    color: #666666;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.projects-filtered {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #000000;
+    font-weight: 500;
+}
+
+.projects-filtered svg {
+    font-size: 14px;
 }
 
 .no-projects {
