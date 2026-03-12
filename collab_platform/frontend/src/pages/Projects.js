@@ -26,9 +26,12 @@ const Projects = () => {
         fetchMyProjects();
     }, []);
 
+    // Fetch available projects only after myProjects is loaded
     useEffect(() => {
-        fetchProjects();
-    }, [filters, myProjects, activeTab]);
+        if (myProjects.length > 0 || !user) {
+            fetchProjects();
+        }
+    }, [filters, activeTab, myProjects]);
 
     const fetchMyProjects = async () => {
         if (!user) {
@@ -57,6 +60,7 @@ const Projects = () => {
 
             const myProjectIds = myProjects.map(p => p.id);
 
+            // Filter based on active tab
             if (activeTab === 'available') {
                 // Show projects user is NOT a member of
                 allProjects = allProjects.filter(project =>
@@ -197,41 +201,52 @@ const Projects = () => {
                             {projects.length > 0 ? (
                                 projects.map((project) => (
                                     <div key={project.id} className="project-card">
-                                        <Link to={`/projects/${project.slug}`}>
-                                            <div className="project-header">
-                                                <span className="project-category">{project.category}</span>
-                                                {project.is_featured && <FaStar className="featured-star" />}
-                                            </div>
+                                        {/* Clicking project name opens join modal */}
+                                        <div
+                                            className="project-header-link"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                if (!isUserMember(project.id) && project.visibility === 'public') {
+                                                    setJoinTarget(project);
+                                                }
+                                            }}
+                                        >
+                                            <Link to={`/projects/${project.slug}`}>
+                                                <div className="project-header">
+                                                    <span className="project-category">{project.category}</span>
+                                                    {project.is_featured && <FaStar className="featured-star" />}
+                                                </div>
 
-                                            <h3>{project.title}</h3>
-                                            <p className="project-description">
-                                                {project.description?.slice(0, 120)}...
-                                            </p>
+                                                <h3>{project.title}</h3>
+                                                <p className="project-description">
+                                                    {project.description?.slice(0, 120)}...
+                                                </p>
 
-                                            <div className="project-problem">
-                                                <strong>Problem:</strong> {project.problem_statement?.slice(0, 80)}...
-                                            </div>
+                                                <div className="project-problem">
+                                                    <strong>Problem:</strong> {project.problem_statement?.slice(0, 80)}...
+                                                </div>
 
-                                            <div className="project-meta">
-                                                <span><FaUsers /> {project.member_count} members</span>
-                                                <span className={`difficulty ${project.difficulty}`}>
-                                                    {project.difficulty}
-                                                </span>
-                                                <span className={`status ${project.status}`}>
-                                                    {project.status?.replace('_', ' ')}
-                                                </span>
-                                            </div>
+                                                <div className="project-meta">
+                                                    <span><FaUsers /> {project.member_count} members</span>
+                                                    <span className={`difficulty ${project.difficulty}`}>
+                                                        {project.difficulty}
+                                                    </span>
+                                                    <span className={`status ${project.status}`}>
+                                                        {project.status?.replace('_', ' ')}
+                                                    </span>
+                                                </div>
 
-                                            <div className="project-tech">
-                                                {project.tech_stack?.slice(0, 4).map((tech, index) => (
-                                                    <span key={index} className="tech-tag">{tech}</span>
-                                                ))}
-                                            </div>
+                                                <div className="project-tech">
+                                                    {project.tech_stack?.slice(0, 4).map((tech, index) => (
+                                                        <span key={index} className="tech-tag">{tech}</span>
+                                                    ))}
+                                                </div>
 
-                                            {project.is_beginner_friendly && (
-                                                <div className="beginner-badge">Beginner Friendly</div>
-                                            )}
-                                        </Link>
+                                                {project.is_beginner_friendly && (
+                                                    <div className="beginner-badge">Beginner Friendly</div>
+                                                )}
+                                            </Link>
+                                        </div>
 
                                         {/* Action Buttons */}
                                         <div className="project-actions">

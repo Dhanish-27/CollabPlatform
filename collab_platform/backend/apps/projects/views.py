@@ -2,10 +2,11 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 import uuid
+import logging
 from datetime import timedelta
 from .models import (
     Project, ProjectMember, JoinRequest,
@@ -17,6 +18,8 @@ from .serializers import (
     ProjectMemberSerializer, JoinRequestSerializer,
     ProjectInvitationSerializer, ProjectBookmarkSerializer
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -127,7 +130,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 Q(members=self.request.user)
             )
         
-        return queryset.select_related('owner').prefetch_related('members')
+        return queryset.select_related('owner').prefetch_related(
+            Prefetch(
+                'project_memberships',
+                queryset=ProjectMember.objects.select_related('user').order_by('joined_at')
+            )
+        )
     
     def perform_create(self, serializer):
         project = serializer.save()
@@ -252,7 +260,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             title='New Join Request',
             message=f"{user.email} wants to join your project {project.title}",
             notification_type='join_request',
-            link=f'/projects/{project.slug}/members'
+            link=f'/projects/{project.slug}'
         )
         
         serializer = JoinRequestSerializer(join_request)
@@ -303,6 +311,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
         request_id = request.data.get('request_id')
         action = request.data.get('action')  # 'accept', 'reject', 'waitlist'
         
+        if not request_id:
+            return Response(
+                {'error': 'request_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not action:
+            return Response(
+                {'error': 'action is required (accept, reject, or waitlist)'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         try:
             join_request = JoinRequest.objects.get(
                 id=request_id,
@@ -315,23 +335,42 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
         
         if action == 'accept':
+            # Check if already a member
+            existing_member = ProjectMember.objects.filter(
+                project=project,
+                user=join_request.user
+            ).first()
+            
+            if existing_member:
+                join_request.status = 'accepted'
+                join_request.save()
+                return Response(
+                    {'error': 'User is already a member of this project'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Create the member record
+            try:
+                member = ProjectMember.objects.create(
+                    project=project,
+                    user=join_request.user,
+                    role=join_request.role_preference
+                )
+                logger.info(f"Successfully added user {join_request.user.email} as {member.role} to project {project.title}")
+            except Exception as e:
+                logger.error(f"Failed to create ProjectMember: {str(e)}")
+                return Response(
+                    {'error': f'Failed to add member: {str(e)}'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
             join_request.status = 'accepted'
             join_request.save()
             
-            # Add user to project
-            ProjectMember.objects.create(
-                project=project,
-                user=join_request.user,
-                role=join_request.role_preference
-            )
-            
-            # Try to add to GitHub repo
-            if hasattr(project, 'github_repo'):
-                try:
+            # Try to add to GitHub repo if available
+            try:
+                if hasattr(project, 'github_repo') and project.github_repo:
                     from apps.github_integration.github_service import GitHubService
-                    import logging
-                    logger = logging.getLogger(__name__)
-                    github_service = GitHubService()
                     
                     user_github = None
                     if join_request.user.github_link:
@@ -340,20 +379,30 @@ class ProjectViewSet(viewsets.ModelViewSet):
                             user_github = parts[1].split('/')[0]
                             
                     if user_github:
-                        repo = github_service.get_repository(project.github_repo.repo_name)
-                        github_service.add_collaborators(repo, [user_github], permission="push")
-                except Exception as e:
-                    logger.warning(f"Failed to add {join_request.user.email} to GitHub repo: {str(e)}")
+                        try:
+                            github_service = GitHubService()
+                            repo = github_service.get_repository(project.github_repo.repo_name)
+                            github_service.add_collaborators(repo, [user_github], permission="push")
+                            logger.info(f"Successfully added {user_github} to GitHub repo {project.github_repo.repo_name}")
+                        except Exception as github_error:
+                            logger.warning(f"GitHub integration error for {join_request.user.email}: {str(github_error)}")
+            except ImportError:
+                logger.warning("GitHub integration not available")
+            except Exception as e:
+                logger.warning(f"Failed to add {join_request.user.email} to GitHub repo: {str(e)}")
             
             # Notify the user
-            from apps.notifications.models import Notification
-            Notification.objects.create(
-                recipient=join_request.user,
-                title='Join Request Accepted',
-                message=f"Your request to join {project.title} has been accepted!",
-                notification_type='join_request_accepted',
-                link=f'/projects/{project.slug}'
-            )
+            try:
+                from apps.notifications.models import Notification
+                Notification.objects.create(
+                    recipient=join_request.user,
+                    title='Join Request Accepted',
+                    message=f"Your request to join {project.title} has been accepted!",
+                    notification_type='join_request_accepted',
+                    link=f'/projects/{project.slug}'
+                )
+            except Exception as e:
+                logger.warning(f"Failed to create notification: {str(e)}")
         
         elif action == 'reject':
             join_request.status = 'rejected'
@@ -605,6 +654,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
         ).select_related('project')
         
         projects = [m.project for m in memberships]
+        serializer = ProjectListSerializer(projects, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def owned_projects(self, request):
+        """Get projects owned by the user."""
+        projects = Project.objects.filter(owner=request.user)
         serializer = ProjectListSerializer(projects, many=True, context={'request': request})
         return Response(serializer.data)
     

@@ -1,47 +1,48 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaBell, FaCheck, FaTimes, FaLink, FaUserPlus, FaTasks, FaEnvelope } from 'react-icons/fa';
 
 const NotificationPopup = () => {
+    const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [showPopup, setShowPopup] = useState(false);
-    const [lastFetched, setLastFetched] = useState(null);
 
-    const fetchNotifications = useCallback(async () => {
-        try {
-            const response = await fetch('/api/notifications/');
-            const data = await response.json();
-            const notifs = Array.isArray(data) ? data : (data.results || []);
-
-            // Get only unread notifications
-            const unread = notifs.filter(n => !n.is_read);
-
-            if (unread.length > unreadCount && lastFetched) {
-                // New notifications arrived - show popup
-                setNotifications(unread.slice(0, 3));
-                setShowPopup(true);
-
-                // Auto-hide after 5 seconds
-                setTimeout(() => {
-                    setShowPopup(false);
-                }, 5000);
-            }
-
-            setUnreadCount(unread.length);
-            setLastFetched(new Date());
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-        }
-    }, [unreadCount, lastFetched]);
-
+    // Fetch notifications only on mount (page reload)
     useEffect(() => {
-        // Fetch notifications on mount and set up polling
+        const fetchNotifications = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/notifications/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                const notifs = Array.isArray(data) ? data : (data.results || []);
+
+                // Get only unread notifications
+                const unread = notifs.filter(n => !n.is_read);
+
+                if (unread.length > 0) {
+                    setNotifications(unread.slice(0, 3));
+                    setShowPopup(true);
+
+                    // Auto-hide after 5 seconds
+                    setTimeout(() => {
+                        setShowPopup(false);
+                    }, 5000);
+                }
+
+                setUnreadCount(unread.length);
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+            }
+        };
+
         fetchNotifications();
-
-        const interval = setInterval(fetchNotifications, 15000); // Check every 15 seconds
-
-        return () => clearInterval(interval);
-    }, [fetchNotifications]);
+    }, []);
 
     const getNotificationIcon = (type) => {
         switch (type) {
@@ -105,7 +106,17 @@ const NotificationPopup = () => {
                             onClick={() => {
                                 markAsRead(notification.id);
                                 if (notification.link) {
-                                    window.location.href = notification.link;
+                                    // Parse the link and navigate to the correct project page
+                                    const link = notification.link;
+                                    // If link contains /members, extract the project slug
+                                    if (link.includes('/members')) {
+                                        const match = link.match(/\/projects\/([^/]+)\/members/);
+                                        if (match) {
+                                            navigate(`/projects/${match[1]}`);
+                                        }
+                                    } else {
+                                        navigate(link);
+                                    }
                                 }
                             }}
                         >

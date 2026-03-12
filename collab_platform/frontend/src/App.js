@@ -31,6 +31,7 @@ const AppContent = () => {
                     <Route path="/projects" element={<Projects />} />
                     <Route path="/projects/new" element={<CreateProject />} />
                     <Route path="/projects/:slug" element={<ProjectDetail />} />
+                    <Route path="/projects/:slug/members" element={<ProjectDetail />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/profile/:id" element={<Profile />} />
                     <Route path="/notifications" element={<Notifications />} />

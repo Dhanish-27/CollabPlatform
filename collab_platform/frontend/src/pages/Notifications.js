@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { FaBell, FaCheck, FaLink, FaUserPlus, FaTasks, FaEnvelope, FaTrash, FaCheckDouble } from 'react-icons/fa';
+import { FaBell, FaCheck, FaLink, FaUserPlus, FaTasks, FaEnvelope, FaTrash, FaCheckDouble, FaClock, FaUser, FaTimes } from 'react-icons/fa';
 import './Notifications.css';
 
 const Notifications = () => {
@@ -9,11 +9,56 @@ const Notifications = () => {
     const [loading, setLoading] = useState(true);
     const [unreadCount, setUnreadCount] = useState(0);
     const [filter, setFilter] = useState('all'); // all, unread, read
+    const [pendingRequests, setPendingRequests] = useState([]);
+    const [loadingRequests, setLoadingRequests] = useState(false);
+    const [actionLoading, setActionLoading] = useState(null);
 
     useEffect(() => {
         fetchNotifications();
         fetchUnreadCount();
+        fetchPendingRequests();
     }, []);
+
+    const fetchPendingRequests = async () => {
+        try {
+            setLoadingRequests(true);
+            // Fetch owned projects first
+            const ownedRes = await axios.get('/api/projects/owned_projects/');
+            const ownedProjects = ownedRes.data;
+
+            console.log('Owned projects:', ownedProjects);
+
+            if (!ownedProjects || ownedProjects.length === 0) {
+                setPendingRequests([]);
+                return;
+            }
+
+            // Fetch pending join requests for each owned project
+            const results = await Promise.all(
+                ownedProjects.map((p) =>
+                    axios
+                        .get(`/api/projects/${p.id}/join_requests/?status=pending`)
+                        .then((res) => {
+                            const data = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+                            console.log(`Requests for project ${p.id}:`, data);
+                            return data.map((r) => ({ ...r, projectTitle: p.title, projectId: p.id }));
+                        })
+                        .catch((err) => {
+                            console.error(`Error fetching requests for project ${p.id}:`, err);
+                            return [];
+                        })
+                )
+            );
+            const allRequests = results.flat().filter(Boolean);
+            console.log('All pending requests:', allRequests);
+            setPendingRequests(allRequests);
+        } catch (error) {
+            console.error('Error fetching pending requests:', error);
+            setPendingRequests([]);
+        } finally {
+            setLoadingRequests(false);
+        }
+    };
 
     const fetchNotifications = async () => {
         try {
@@ -66,6 +111,30 @@ const Notifications = () => {
         }
     };
 
+    const handleRequestAction = async (projectId, requestId, action) => {
+        setActionLoading(requestId);
+        try {
+            await axios.post(`/api/projects/${projectId}/handle_join_request/`, {
+                request_id: requestId,
+                action, // 'accept' | 'reject'
+            });
+            // Remove from local list
+            setPendingRequests((prev) => prev.filter((r) => r.id !== requestId));
+
+            // Show success message
+            if (action === 'accept') {
+                alert('Join request accepted! The user has been added to the project.');
+            } else {
+                alert('Join request rejected.');
+            }
+        } catch (err) {
+            console.error('Error handling join request:', err);
+            alert(err.response?.data?.error || 'Action failed. Please try again.');
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     const getNotificationIcon = (type) => {
         switch (type) {
             case 'join_request':
@@ -110,6 +179,66 @@ const Notifications = () => {
     return (
         <div className="notifications-page">
             <div className="container">
+                {/* Pending Join Requests Section */}
+                {(loadingRequests || pendingRequests.length > 0) && (
+                    <div className="notifications-section pending-requests-section">
+                        <div className="section-header">
+                            <h2><FaUserPlus /> Pending Join Requests</h2>
+                            <span className="section-badge">{pendingRequests.length}</span>
+                        </div>
+
+                        {loadingRequests ? (
+                            <p className="loading-text">Loading requests...</p>
+                        ) : pendingRequests.length === 0 ? (
+                            <p className="empty-text">No pending join requests for your projects.</p>
+                        ) : (
+                            <div className="pending-requests-list">
+                                {pendingRequests.map((req) => (
+                                    <div key={req.id} className="pending-request-item">
+                                        <div className="request-header">
+                                            <div className="request-user">
+                                                <FaUser className="user-icon" />
+                                                <span>{req.user?.username || req.user?.email || `User #${req.user}`}</span>
+                                            </div>
+                                            <span className="request-project">{req.projectTitle}</span>
+                                        </div>
+
+                                        <div className="request-details">
+                                            <div className="request-role">
+                                                <strong>Role:</strong> {req.role_preference || 'contributor'}
+                                            </div>
+                                            {req.message && (
+                                                <div className="request-message">
+                                                    <strong>Message:</strong> "{req.message}"
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="request-actions">
+                                            <button
+                                                className="btn btn-accept"
+                                                disabled={actionLoading === req.id}
+                                                onClick={() => handleRequestAction(req.projectId, req.id, 'accept')}
+                                            >
+                                                {actionLoading === req.id ? <FaClock className="spin" /> : <FaCheck />}
+                                                {actionLoading === req.id ? 'Processing...' : 'Accept'}
+                                            </button>
+                                            <button
+                                                className="btn btn-reject"
+                                                disabled={actionLoading === req.id}
+                                                onClick={() => handleRequestAction(req.projectId, req.id, 'reject')}
+                                            >
+                                                {actionLoading === req.id ? <FaClock className="spin" /> : <FaTimes />}
+                                                {actionLoading === req.id ? 'Processing...' : 'Reject'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="notifications-header">
                     <div className="notifications-header-content">
                         <h1>Notifications</h1>

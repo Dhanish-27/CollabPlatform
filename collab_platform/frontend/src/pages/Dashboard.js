@@ -10,6 +10,7 @@ const Dashboard = React.memo(() => {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [myProjects, setMyProjects] = useState([]);
+    const [ownedProjects, setOwnedProjects] = useState([]);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [unreadNotifications, setUnreadNotifications] = useState(0);
@@ -20,12 +21,14 @@ const Dashboard = React.memo(() => {
 
     const fetchData = async () => {
         try {
-            const [projectsRes, statsRes, notificationsRes] = await Promise.all([
+            const [projectsRes, ownedProjectsRes, statsRes, notificationsRes] = await Promise.all([
                 axios.get('/api/projects/my_projects/'),
+                axios.get('/api/projects/owned_projects/'),
                 axios.get('/api/analytics/dashboard/'),
                 axios.get('/api/notifications/unread_count/').catch(() => ({ data: { count: 0 } }))
             ]);
             setMyProjects(projectsRes.data);
+            setOwnedProjects(ownedProjectsRes.data);
             setStats(statsRes.data);
             setUnreadNotifications(notificationsRes.data.count || 0);
         } catch (error) {
@@ -203,11 +206,9 @@ const Dashboard = React.memo(() => {
                 </div>
 
                 {/* Join Requests Panel — visible to project owners only */}
-                {user && (
+                {user && ownedProjects.length > 0 && (
                     <JoinRequestsPanel
-                        projects={myProjects.filter(
-                            (p) => p && (p.owner === user.id || p.owner?.id === user.id)
-                        )}
+                        projects={ownedProjects}
                     />
                 )}
             </div>

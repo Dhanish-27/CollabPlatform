@@ -6,6 +6,174 @@
     padding: 40px 0 80px;
 }
 
+.notifications-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+.pending-requests-section {
+    border-left: 4px solid #000000;
+}
+
+.pending-requests-section .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.pending-requests-section .section-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #000000;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pending-requests-section .section-badge {
+    background: #000000;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pending-requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.pending-request-item {
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: #fafafa;
+}
+
+.pending-request-item .request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.pending-request-item .request-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #000000;
+}
+
+.pending-request-item .request-user .user-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000000;
+    color: #ffffff;
+    border-radius: 50%;
+    font-size: 14px;
+}
+
+.pending-request-item .request-project {
+    background: #000000;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 2px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.pending-request-item .request-details {
+    margin-bottom: 16px;
+}
+
+.pending-request-item .request-role,
+.pending-request-item .request-message {
+    font-size: 14px;
+    color: #666666;
+    margin-bottom: 8px;
+}
+
+.pending-request-item .request-message {
+    padding: 8px 12px;
+    background: #ffffff;
+    border-left: 3px solid #000000;
+    font-style: italic;
+}
+
+.pending-request-item .request-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.pending-request-item .request-actions .btn {
+    padding: 8px 16px;
+    border-radius: 2px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    transition: all 0.2s;
+}
+
+.pending-request-item .request-actions .btn-accept {
+    background: #000000;
+    color: #ffffff;
+}
+
+.pending-request-item .request-actions .btn-accept:hover {
+    background: #333333;
+}
+
+.pending-request-item .request-actions .btn-reject {
+    background: #ffffff;
+    color: #000000;
+    border: 2px solid #000000;
+}
+
+.pending-request-item .request-actions .btn-reject:hover {
+    background: #f5f5f5;
+}
+
+.pending-request-item .request-actions .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-text,
+.empty-text {
+    color: #666666;
+    font-size: 14px;
+    padding: 12px 0;
+}
+
 .notifications-page .container {
     max-width: 900px;
     margin: 0 auto;

@@ -64,9 +64,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
 class ProjectDetailSerializer(serializers.ModelSerializer):
     """Serializer for project detail view."""
     owner = UserProfileSerializer(read_only=True)
-    members = ProjectMemberSerializer(many=True, read_only=True)
-    member_count = serializers.IntegerField(read_only=True)
-    completion_percentage = serializers.IntegerField(read_only=True)
+    members = ProjectMemberSerializer(source='project_memberships', many=True, read_only=True)
+    member_count = serializers.SerializerMethodField()
+    completion_percentage = serializers.SerializerMethodField()
     is_member = serializers.SerializerMethodField()
     is_bookmarked = serializers.SerializerMethodField()
     user_role = serializers.SerializerMethodField()
@@ -83,10 +83,24 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'is_member', 'is_bookmarked', 'user_role'
         ]
     
+    def get_member_count(self, obj):
+        return obj.project_memberships.count()
+    
+    def get_completion_percentage(self, obj):
+        """Only return completion percentage for project members."""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            membership = obj.project_memberships.filter(
+                user=request.user
+            ).first()
+            if membership:
+                return obj.completion_percentage
+        return None
+    
     def get_is_member(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return obj.members.filter(id=request.user.id).exists()
+            return obj.project_memberships.filter(user=request.user).exists()
         return False
     
     def get_is_bookmarked(self, obj):
@@ -101,13 +115,32 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     def get_user_role(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            membership = ProjectMember.objects.filter(
-                project=obj,
+            membership = obj.project_memberships.filter(
                 user=request.user
             ).first()
             if membership:
                 return membership.role
         return None
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Add join requests for owners/maintainers
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            membership = instance.project_memberships.filter(
+                user=request.user
+            ).first()
+            if membership and membership.role in ['owner', 'maintainer']:
+                join_requests = JoinRequest.objects.filter(
+                    project=instance,
+                    status='pending'
+                )
+                data['join_requests'] = JoinRequestSerializer(join_requests, many=True).data
+            else:
+                data['join_requests'] = []
+        else:
+            data['join_requests'] = []
+        return data
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):

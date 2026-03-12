@@ -4,16 +4,16 @@ Django settings for collab_platform project.
 import os
 from pathlib import Path
 from datetime import timedelta
-from dotenv import load_dotenv
+from decouple import Config, RepositoryEnv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env file
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+config = Config(RepositoryEnv(os.path.join(BASE_DIR, '.env')))
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
+SECRET_KEY = config('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
 
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = config('DEBUG', True, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
@@ -145,8 +145,8 @@ LOGIN_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 
 # Social Auth settings
-SOCIAL_AUTH_GITHUB_KEY = os.environ.get('GITHUB_CLIENT_ID', '')
-SOCIAL_AUTH_GITHUB_SECRET = os.environ.get('GITHUB_CLIENT_SECRET', '')
+SOCIAL_AUTH_GITHUB_KEY = config('GITHUB_CLIENT_ID', '')
+SOCIAL_AUTH_GITHUB_SECRET = config('GITHUB_CLIENT_SECRET', '')
 
 # Channels settings - Development fallback
 CHANNEL_LAYERS = {
@@ -156,7 +156,7 @@ CHANNEL_LAYERS = {
 }
 
 # Redis configuration (used for channels when available)
-REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+REDIS_URL = config('REDIS_URL', 'redis://localhost:6379/0')
 
 # Email settings (development)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -168,5 +168,5 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 # GitHub Integration Configuration
 # Token must only be in .env file - never hardcode it!
-GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
-GITHUB_ORG_NAME = os.environ.get('GITHUB_ORG_NAME', '')
+GITHUB_TOKEN = config('GITHUB_TOKEN', '')
+GITHUB_ORG_NAME = config('GITHUB_ORG_NAME', '')

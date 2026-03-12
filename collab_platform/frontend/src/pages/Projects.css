@@ -168,6 +168,19 @@
     border-color: #000000;
 }
 
+.project-header-link {
+    cursor: pointer;
+}
+
+.project-header-link:hover h3 {
+    text-decoration: underline;
+}
+
+.project-header-link a {
+    text-decoration: none;
+    color: inherit;
+}
+
 .project-header {
     display: flex;
     justify-content: space-between;
