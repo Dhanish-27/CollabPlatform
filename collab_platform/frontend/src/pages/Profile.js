@@ -345,7 +345,6 @@ const Profile = () => {
 
                     {/* Sidebar */}
                     <div className="profile-sidebar">
-                        {/* Profile Completion */}
                         <div className="completion-card">
                             <h3>Profile Completion</h3>
                             <div className="completion-ring">
