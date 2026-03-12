@@ -361,7 +361,7 @@ const Profile = () => {
                                         a 15.9155 15.9155 0 0 1 0 31.831
                                         a 15.9155 15.9155 0 0 1 0 -31.831"
                                     />
-                                    <text x="18" y="20.35" className="percentage">{profileCompletion}%</text>
+                                    <text x="19" y="22" className="percentage " style={{fontSize:"12px"}}>{profileCompletion}%</text>
                                 </svg>
                             </div>
                             {profileCompletion < 100 && isOwnProfile && (

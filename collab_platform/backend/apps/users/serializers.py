@@ -41,7 +41,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email', 'username', 'role', 'avatar', 'bio',
             'skills', 'skills_list', 'experience_level',
-            'github_link', 'portfolio_link', 'linkedin_link',
+            'github_username', 'github_link', 'portfolio_link', 'linkedin_link',
             'availability_hours', 'is_available_for_mentoring',
             'is_public_profile', 'is_verified_mentor', 'profile_completion',
             'projects_joined_count', 'tasks_completed_count',
@@ -84,10 +84,45 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     """Serializer for user registration."""
     password = serializers.CharField(write_only=True, validators=[validate_password])
     password_confirm = serializers.CharField(write_only=True)
+    github_username = serializers.CharField(
+        max_length=39,
+        help_text="Your GitHub username — must be an existing GitHub account not already registered here."
+    )
     
     class Meta:
         model = User
-        fields = ['email', 'username', 'password', 'password_confirm', 'role']
+        fields = ['email', 'username', 'github_username', 'password', 'password_confirm', 'role']
+    
+    def validate_github_username(self, value):
+        """Validate that the GitHub username exists on GitHub and is unique in our DB."""
+        value = value.strip().lower()
+        
+        if not value:
+            raise serializers.ValidationError("GitHub username is required.")
+        
+        # Check uniqueness in our DB first (cheap, no API call)
+        if User.objects.filter(github_username=value).exists():
+            raise serializers.ValidationError(
+                "This GitHub username is already linked to another account on this platform."
+            )
+        
+        # Validate existence on GitHub (API call)
+        try:
+            from apps.github_integration.github_service import GitHubService
+            from django.conf import settings
+            if hasattr(settings, 'GITHUB_TOKEN') and settings.GITHUB_TOKEN:
+                service = GitHubService()
+                if not service.check_user_exists(value):
+                    raise serializers.ValidationError(
+                        f"GitHub user '{value}' does not exist. Please enter a valid GitHub username."
+                    )
+        except serializers.ValidationError:
+            raise
+        except Exception:
+            # If GitHub API is unreachable, skip the check to not block registration
+            pass
+        
+        return value
     
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
@@ -108,7 +143,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'role', 'avatar', 'bio',
-            'skills', 'experience_level', 'github_link',
+            'skills', 'experience_level', 'github_username', 'github_link',
             'portfolio_link', 'availability_hours',
             'is_verified_mentor', 'profile_completion',
             'projects_joined_count', 'teamwork_rating',

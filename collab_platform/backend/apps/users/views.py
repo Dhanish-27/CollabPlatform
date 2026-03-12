@@ -12,8 +12,86 @@ from .serializers import (
     UserSkillSerializer, UserActivitySerializer,
     PasswordChangeSerializer, PasswordResetRequestSerializer
 )
+import logging
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
+
+
+
+class ValidateGitHubUsernameView(APIView):
+    """Real-time GitHub username validation for the registration form.
+
+    Uses the public GitHub REST API directly (no org initialization required).
+    POST body: { "github_username": "somename" }
+    Returns:   { "valid": true } or { "valid": false, "error": "..." }
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        import requests as http_requests
+        from django.conf import settings
+
+        github_username = request.data.get('github_username', '').strip()
+
+        if not github_username:
+            return Response(
+                {'valid': False, 'error': 'GitHub username is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # GitHub usernames are case-insensitive; normalise for DB look-ups
+        github_username_lower = github_username.lower()
+
+        # ── Check DB uniqueness first (no network call) ──────────────────
+        if User.objects.filter(github_username__iexact=github_username).exists():
+            return Response({
+                'valid': False,
+                'error': 'This GitHub username is already linked to another account on this platform.'
+            })
+
+        # ── Check GitHub REST API directly ───────────────────────────────
+        # Uses PAT as optional auth header to raise rate limit (60 → 5000 req/hr).
+        # Does NOT require org access — this is a public user-lookup endpoint.
+        try:
+            headers = {'Accept': 'application/vnd.github+json'}
+            token = getattr(settings, 'GITHUB_TOKEN', None)
+            if token:
+                headers['Authorization'] = f'Bearer {token}'
+
+            resp = http_requests.get(
+                f'https://api.github.com/users/{github_username}',
+                headers=headers,
+                timeout=5
+            )
+
+            if resp.status_code == 200:
+                # User exists — store the login name as returned by GitHub
+                # (preserves original casing, e.g. "Dhanish-27")
+                canonical_username = resp.json().get('login', github_username)
+                return Response({'valid': True, 'canonical': canonical_username})
+
+            elif resp.status_code == 404:
+                return Response({
+                    'valid': False,
+                    'error': f"GitHub user '{github_username}' does not exist. Please check the spelling."
+                })
+
+            else:
+                # Unexpected status — degrade gracefully
+                logger.warning(f"GitHub API returned {resp.status_code} for user '{github_username}'")
+                return Response({
+                    'valid': True,
+                    'warning': f'GitHub returned status {resp.status_code}; username not fully verified.'
+                })
+
+        except http_requests.Timeout:
+            logger.warning(f"GitHub API timed out while validating '{github_username}'")
+            return Response({'valid': True, 'warning': 'GitHub API timed out; username not verified online.'})
+
+        except Exception as e:
+            logger.warning(f"GitHub API check failed for '{github_username}': {e}")
+            return Response({'valid': True, 'warning': 'GitHub API unreachable; username not verified online.'})
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -74,9 +152,9 @@ class UserViewSet(viewsets.ModelViewSet):
         return queryset
     
     def perform_create(self, serializer):
-        user = serializer.save()
-        user.set_password(serializer.validated_data['password'])
-        user.save()
+        # UserRegistrationSerializer.create() calls create_user() which
+        # already hashes the password correctly — no extra set_password needed.
+        serializer.save()
     
     @action(detail=False, methods=['get'])
     def me(self, request):

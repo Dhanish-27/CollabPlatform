@@ -124,8 +124,24 @@ class GitHubService:
         try:
             self.g.get_user(username)
             return True
-        except:
+        except Exception:
             return False
+    
+    @staticmethod
+    def role_to_permission(role):
+        """Map a local project role to a GitHub collaborator permission string.
+        
+        Args:
+            role (str): Local role — 'owner', 'maintainer', or 'contributor'
+            
+        Returns:
+            str: GitHub permission — 'admin', 'maintain', or 'push'
+        """
+        mapping = {
+            'owner': 'admin',
+            'maintainer': 'maintain',
+        }
+        return mapping.get(role, 'push')  # default: push (write) for contributors
     
     def get_repository(self, repo_name):
         """Get a repository from the organization.

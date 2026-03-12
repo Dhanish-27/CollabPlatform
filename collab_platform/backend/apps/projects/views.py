@@ -179,19 +179,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
                     except Exception as e:
                         logger.warning(f"Failed to create dev branch: {str(e)}")
                         
-                    # Add creator as an admin collaborator if they have a GitHub link
-                    creator_github = None
-                    if project.owner.github_link:
-                        parts = project.owner.github_link.rstrip('/').split('github.com/')
-                        if len(parts) > 1:
-                            creator_github = parts[1].split('/')[0]
+                    # Add creator as an admin collaborator if they have a GitHub username
+                    creator_github = getattr(project.owner, 'github_username', None) or None
                     
                     if creator_github:
                         try:
-                            # Use "admin" permission if possible, otherwise "push" is default in github_service
+                            from apps.github_integration.github_service import GitHubService as _GHS
                             github_service.add_collaborators(repo, [creator_github], permission="admin")
+                            logger.info(f"Added {creator_github} as admin collaborator on {repo_name}")
                         except Exception as e:
                             logger.warning(f"Failed to add creator {creator_github} as collaborator: {str(e)}")
+                    else:
+                        logger.info(f"Owner {project.owner.email} has no github_username set; skipping collaborator add.")
                         
                     # Save GitHubRepository
                     GitHubRepository.objects.create(
@@ -372,20 +371,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 if hasattr(project, 'github_repo') and project.github_repo:
                     from apps.github_integration.github_service import GitHubService
                     
-                    user_github = None
-                    if join_request.user.github_link:
-                        parts = join_request.user.github_link.rstrip('/').split('github.com/')
-                        if len(parts) > 1:
-                            user_github = parts[1].split('/')[0]
-                            
+                    user_github = getattr(join_request.user, 'github_username', None) or None
+                    
                     if user_github:
                         try:
                             github_service = GitHubService()
                             repo = github_service.get_repository(project.github_repo.repo_name)
-                            github_service.add_collaborators(repo, [user_github], permission="push")
-                            logger.info(f"Successfully added {user_github} to GitHub repo {project.github_repo.repo_name}")
+                            permission = GitHubService.role_to_permission(member.role)
+                            github_service.add_collaborators(repo, [user_github], permission=permission)
+                            logger.info(f"Added {user_github} to GitHub repo {project.github_repo.repo_name} with '{permission}' permission")
                         except Exception as github_error:
                             logger.warning(f"GitHub integration error for {join_request.user.email}: {str(github_error)}")
+                    else:
+                        logger.info(f"User {join_request.user.email} has no github_username; skipping GitHub collaborator add.")
             except ImportError:
                 logger.warning("GitHub integration not available")
             except Exception as e:
@@ -766,24 +764,22 @@ class InvitationViewSet(viewsets.ViewSet):
         )
         
         # Try to add to GitHub repo
-        if hasattr(invitation.project, 'github_repo'):
+        if hasattr(invitation.project, 'github_repo') and invitation.project.github_repo:
             try:
                 from apps.github_integration.github_service import GitHubService
                 import logging
                 logger = logging.getLogger(__name__)
                 github_service = GitHubService()
                 
-                user_github = None
-                if request.user.github_link:
-                    parts = request.user.github_link.rstrip('/').split('github.com/')
-                    if len(parts) > 1:
-                        user_github = parts[1].split('/')[0]
-                        
+                user_github = getattr(request.user, 'github_username', None) or None
+                
                 if user_github:
                     repo = github_service.get_repository(invitation.project.github_repo.repo_name)
-                    # Mapping local roles to github permissions
-                    permission = "admin" if invitation.role == "owner" else ("push" if invitation.role == "maintainer" else "pull")
+                    permission = GitHubService.role_to_permission(invitation.role)
                     github_service.add_collaborators(repo, [user_github], permission=permission)
+                    logger.info(f"Added {user_github} to repo {invitation.project.github_repo.repo_name} via invitation with '{permission}' permission")
+                else:
+                    logger.info(f"Invited user {request.user.email} has no github_username; skipping GitHub collaborator add.")
             except Exception as e:
                 logger.warning(f"Failed to add {request.user.email} to GitHub repo: {str(e)}")
         

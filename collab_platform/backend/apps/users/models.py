@@ -40,6 +40,7 @@ class User(AbstractUser):
     )
     
     # Links
+    github_username = models.CharField(max_length=39, unique=True, help_text="Your GitHub username (validated against GitHub)")
     github_link = models.URLField(blank=True)
     portfolio_link = models.URLField(blank=True)
     linkedin_link = models.URLField(blank=True)
@@ -90,7 +91,7 @@ class User(AbstractUser):
             self.avatar,
             self.skills,
             self.experience_level,
-            self.github_link,
+            self.github_username,
             self.portfolio_link,
             self.availability_hours,
         ]
