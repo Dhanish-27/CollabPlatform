@@ -233,25 +233,45 @@ All REST endpoints are prefixed with `/api/`. JWT `Bearer` token required on pro
 | `POST` | `/api/users/token/refresh/` | Refresh access token |
 | `GET/PUT` | `/api/users/profile/<id>/` | View / update user profile |
 | `GET` | `/api/users/search/` | Search users by username/email |
+| `GET` | `/api/users/me/` | Get current user profile |
+| `POST` | `/api/users/change_password/` | Change user password |
+| `GET` | `/api/users/activities/` | Get user activities |
+| `GET` | `/api/users/public_profile/<id>/` | Get public profile of a user |
+| `POST` | `/api/users/validate_github_username/` | Validate GitHub username (real-time) |
+| `POST` | `/api/users/password_reset_request/` | Request password reset |
 
 ### Projects — `/api/projects/`
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/projects/` | List all public projects |
+| `GET` | `/api/projects/` | List all public projects (with filters) |
 | `POST` | `/api/projects/` | Create a new project |
 | `GET/PUT/DELETE` | `/api/projects/<slug>/` | Project detail / update / delete |
 | `POST` | `/api/projects/<slug>/join/` | Request to join a project |
-| `POST` | `/api/projects/<slug>/join-requests/<id>/approve/` | Approve join request (owner) |
-| `POST` | `/api/projects/<slug>/join-requests/<id>/reject/` | Reject join request (owner) |
+| `GET` | `/api/projects/<slug>/join_requests/` | Get join requests for a project (owner/maintainer) |
+| `POST` | `/api/projects/<slug>/join_requests/<id>/handle/` | Accept/reject/waitlist join request (owner/maintainer) |
+| `POST` | `/api/projects/<slug>/leave/` | Leave a project |
+| `GET` | `/api/projects/my_projects/` | Get projects where user is member |
+| `GET` | `/api/projects/owned_projects/` | Get projects owned by user |
+| `POST` | `/api/projects/<slug>/update_member_role/` | Update member role (owner only) |
+| `POST` | `/api/projects/<slug>/remove_member/` | Remove member from project (owner/maintainer) |
+| `POST` | `/api/projects/<slug>/bookmark/` | Bookmark/unbookmark project |
+| `GET` | `/api/projects/<slug>/check_bookmark/` | Check if project is bookmarked by user |
 
 ### Tasks — `/api/tasks/`
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET/POST` | `/api/tasks/` | List / create tasks |
+| `GET/POST` | `/api/tasks/` | List / create tasks (with filters) |
 | `GET/PUT/DELETE` | `/api/tasks/<id>/` | Task detail / update / delete |
 | `PATCH` | `/api/tasks/<id>/` | Update task status or assignment |
+| `POST` | `/api/tasks/<id>/assign/` | Assign task to a user |
+| `POST` | `/api/tasks/<id>/add_comment/` | Add a comment to a task |
+| `POST` | `/api/tasks/<id>/upload_attachment/` | Upload an attachment to a task |
+| `GET` | `/api/tasks/my_tasks/` | Get tasks assigned to current user |
+| `GET` | `/api/tasks/unassigned/` | Get unassigned tasks for a project |
+| `GET` | `/api/tasks/<id>/comments/` | Get comments for a task |
+| `GET` | `/api/tasks/<id>/attachments/` | Get attachments for a task |
 
 ### Communications — `/api/communications/`
 
@@ -260,6 +280,13 @@ All REST endpoints are prefixed with `/api/`. JWT `Bearer` token required on pro
 | `GET/POST` | `/api/communications/groups/` | List / create chat groups |
 | `GET` | `/api/communications/groups/<id>/messages/` | Fetch message history |
 | `POST` | `/api/communications/groups/<id>/members/` | Add a member to a group |
+| `GET/POST` | `/api/communications/chat_messages/` | List / create chat messages |
+| `GET/POST` | `/api/communications/threads/` | List / create threaded discussions |
+| `GET` | `/api/communications/threads/<id>/` | Get thread detail with replies |
+| `POST` | `/api/communications/threads/<id>/reply/` | Add reply to a thread |
+| `GET/POST` | `/api/communications/announcements/` | List / create announcements |
+| `POST` | `/api/communications/announcements/<id>/pin/` | Pin an announcement |
+| `POST` | `/api/communications/announcements/<id>/unpin/` | Unpin an announcement |
 
 ### Notifications — `/api/notifications/`
 
@@ -268,6 +295,9 @@ All REST endpoints are prefixed with `/api/`. JWT `Bearer` token required on pro
 | `GET` | `/api/notifications/` | List user notifications |
 | `PATCH` | `/api/notifications/<id>/read/` | Mark notification as read |
 | `POST` | `/api/notifications/mark-all-read/` | Mark all as read |
+| `GET` | `/api/notifications/unread_count/` | Get unread notification count |
+| `GET` | `/api/notifications/settings/` | Get notification settings |
+| `PUT` | `/api/notifications/settings/` | Update notification settings |
 
 ### GitHub Integration — `/api/github/`
 
@@ -275,6 +305,9 @@ All REST endpoints are prefixed with `/api/`. JWT `Bearer` token required on pro
 |---|---|---|
 | `POST` | `/api/github/connect/` | Link a GitHub repository to a project |
 | `GET` | `/api/github/commits/<project_id>/` | Fetch synced commits |
+| `GET` | `/api/github/pull_requests/<project_id>/` | Fetch synced pull requests |
+| `GET` | `/api/github/issues/<project_id>/` | Fetch synced issues |
+| `GET` | `/api/github/contribution_analytics/` | Get contribution analytics for user/project |
 
 ### Analytics — `/api/analytics/`
 
@@ -282,6 +315,11 @@ All REST endpoints are prefixed with `/api/`. JWT `Bearer` token required on pro
 |---|---|---|
 | `GET` | `/api/analytics/project/<id>/` | Project activity analytics |
 | `GET` | `/api/analytics/user/<id>/` | User contribution analytics |
+| `GET` | `/api/analytics/dashboard/` | Get dashboard statistics |
+| `GET` | `/api/analytics/feedback/` | Get feedback for user/project |
+| `POST` | `/api/analytics/feedback/` | Submit feedback for user |
+| `GET` | `/api/analytics/reports/` | Get reports |
+| `POST` | `/api/analytics/reports/` | Create a report |
 
 ---
 
@@ -372,7 +410,7 @@ AuthContext stores tokens in localStorage
 2. POST /api/projects/<slug>/join/  →  JoinRequest created
 3. Project owner receives an in-app notification
 4. Owner visits project detail  →  opens Join Requests panel
-5. Owner approves/rejects  →  POST .../join-requests/<id>/approve|reject/
+5. Owner approves/rejects  →  POST .../join-requests/<id>/handle/ (accept/reject/waitlist)
 6. New member added; requester receives notification
 ```
 
@@ -396,6 +434,73 @@ AuthContext stores tokens in localStorage
 3. Assignee receives notification
 4. Status updated via PATCH /api/tasks/<id>/  (todo → in_progress → done)
 5. Activity logged for analytics
+6. Additional task features:
+   - Assign task to team member: POST /api/tasks/<id>/assign/
+   - Add comments: POST /api/tasks/<id>/add_comment/
+   - Upload attachments: POST /api/tasks/<id>/upload_attachment/
+   - Filter tasks by project, status, assignee, etc.
+```
+
+### Threaded Discussions
+
+```
+1. User navigates to project detail page
+2. Clicks on "Discussions" tab
+3. Views existing threads or creates new thread: POST /api/communications/threads/
+4. Replies to threads: POST /api/communications/threads/<id>/reply/
+5. Can pin important threads for visibility
+```
+
+### Announcements
+
+```
+1. Project owner or maintainer creates announcement: POST /api/communications/announcements/
+2. All project members receive notification
+3. Announcements can be pinned/unpinned for visibility
+4. Only owners/maintainers can create announcements
+```
+
+### GitHub Integration
+
+```
+1. User links GitHub account via Profile page
+2. Project owner links GitHub repository via project detail page: POST /api/github/connect/
+3. System syncs commits, pull requests, and issues
+4. View synced commits: GET /api/github/commits/<project_id>/
+5. View synced pull requests: GET /api/github/pull_requests/<project_id>/
+6. View synced issues: GET /api/github/issues/<project_id>/
+7. View contribution analytics: GET /api/github/contribution_analytics/
+```
+
+### Notifications
+
+```
+1. Users receive notifications for various events (join requests, task assignments, mentions, etc.)
+2. View notifications: GET /api/notifications/
+3. Mark notification as read: PATCH /api/notifications/<id>/read/
+4. Mark all as read: POST /api/notifications/mark-all-read/
+5. Check unread count: GET /api/notifications/unread_count/
+6. Configure notification preferences: GET/PUT /api/notifications/settings/
+```
+
+### Analytics & Reporting
+
+```
+1. View project analytics: GET /api/analytics/project/<id>/
+2. View user contribution analytics: GET /api/analytics/user/<id>/
+3. Get dashboard statistics: GET /api/analytics/dashboard/
+4. Submit feedback for users: POST /api/analytics/feedback/
+5. View feedback: GET /api/analytics/feedback/
+6. Create and view reports: GET/POST /api/analytics/reports/
+```
+
+### Project Bookmarking
+
+```
+1. User bookmarks project: POST /api/projects/<slug>/bookmark/
+2. User unbookmarks project: POST /api/projects/<slug>/bookmark/ (toggle)
+3. Check if bookmarked: GET /api/projects/<slug>/check_bookmark/
+4. View bookmarked projects in user profile
 ```
 
 ---

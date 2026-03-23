@@ -26,7 +26,7 @@ const Profile = () => {
             setProfile(response.data);
             setEditForm({
                 bio: response.data.bio || '',
-                skills: response.data.skills || [],
+                skills_list: response.data.skills || [],
                 experience_level: response.data.experience_level || 'beginner',
                 availability_hours: response.data.availability_hours || 0,
                 github_link: response.data.github_link || '',
@@ -46,7 +46,7 @@ const Profile = () => {
             // Cancel editing - reset form
             setEditForm({
                 bio: profile.bio || '',
-                skills: profile.skills || [],
+                skills_list: profile.skills || [],
                 experience_level: profile.experience_level || 'beginner',
                 availability_hours: profile.availability_hours || 0,
                 github_link: profile.github_link || '',
@@ -77,8 +77,8 @@ const Profile = () => {
         if (e.key === 'Enter' && e.target.value.trim()) {
             e.preventDefault();
             const newSkill = e.target.value.trim();
-            if (!editForm.skills.includes(newSkill)) {
-                setEditForm({ ...editForm, skills: [...editForm.skills, newSkill] });
+            if (!editForm.skills_list.includes(newSkill)) {
+                setEditForm({ ...editForm, skills_list: [...editForm.skills_list, newSkill] });
             }
             e.target.value = '';
         }
@@ -87,7 +87,7 @@ const Profile = () => {
     const handleSkillRemove = (skillToRemove) => {
         setEditForm({
             ...editForm,
-            skills: editForm.skills.filter(skill => skill !== skillToRemove)
+            skills_list: editForm.skills_list.filter(skill => skill !== skillToRemove)
         });
     };
 
@@ -199,7 +199,7 @@ const Profile = () => {
                             {isEditing ? (
                                 <div className="skills-edit">
                                     <div className="skills-list">
-                                        {editForm.skills.map((skill, index) => (
+                                        {editForm.skills_list.map((skill, index) => (
                                             <span key={index} className="skill-tag">
                                                 {skill}
                                                 <button
@@ -360,7 +360,7 @@ const Profile = () => {
                                         a 15.9155 15.9155 0 0 1 0 31.831
                                         a 15.9155 15.9155 0 0 1 0 -31.831"
                                     />
-                                    <text x="19" y="22" className="percentage " style={{fontSize:"12px"}}>{profileCompletion}%</text>
+                                    <text x="19" y="22" className="percentage " style={{ fontSize: "12px" }}>{profileCompletion}%</text>
                                 </svg>
                             </div>
                             {profileCompletion < 100 && isOwnProfile && (

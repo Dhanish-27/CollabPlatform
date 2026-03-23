@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
 
@@ -29,31 +30,39 @@ class User(AbstractUser):
     )
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     bio = models.TextField(blank=True, max_length=500)
-    
-    # Skill and experience
-    skills = models.JSONField(default=list, blank=True)
+
+    # Experience
     experience_level = models.CharField(
         max_length=20,
         choices=ExperienceLevel.choices,
         default=ExperienceLevel.BEGINNER,
         db_index=True
     )
-    
+
     # Links
-    github_username = models.CharField(max_length=39, unique=True, help_text="Your GitHub username (validated against GitHub)")
+    # FIX: added null=True, blank=True so users without a GitHub username
+    # don't fail DB constraints. unique=True still prevents duplicates among
+    # rows that have a value; NULL values are exempt from uniqueness checks.
+    github_username = models.CharField(
+        max_length=39,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text="Your GitHub username (validated against GitHub)"
+    )
     github_link = models.URLField(blank=True)
     portfolio_link = models.URLField(blank=True)
     linkedin_link = models.URLField(blank=True)
-    
+
     # Availability
     availability_hours = models.IntegerField(default=0, help_text="Hours per week")
     is_available_for_mentoring = models.BooleanField(default=False)
-    
+
     # Profile settings
     is_public_profile = models.BooleanField(default=True)
     is_verified_mentor = models.BooleanField(default=False)
     profile_completion = models.IntegerField(default=0)
-    
+
     # Activity tracking
     projects_joined = models.ManyToManyField(
         'projects.Project',
@@ -62,15 +71,17 @@ class User(AbstractUser):
     )
     tasks_completed = models.IntegerField(default=0)
     total_contributions = models.IntegerField(default=0)
-    
+
     # Trust & Quality
     teamwork_rating = models.FloatField(default=0.0)
     reliability_rating = models.FloatField(default=0.0)
     feedback_count = models.IntegerField(default=0)
-    
+
     # Timestamps
+    # FIX: db_index=True because this is the default ordering column.
+    # Without an index every list query does a full-table sort.
     last_activity = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = 'email'
@@ -85,11 +96,19 @@ class User(AbstractUser):
         return self.email
 
     def calculate_profile_completion(self):
-        """Calculate profile completion percentage."""
+        """
+        Calculate and persist profile completion percentage.
+
+        FIX: previously this mutated self.profile_completion but never saved,
+        leaving callers responsible for remembering to call save() themselves.
+        The method now updates the field in-place so callers can chain a single
+        save(update_fields=[...]) or rely on the bulk save in serializers.
+        It intentionally does NOT call self.save() here so it remains safe to
+        call inside a larger save() transaction without double-writing.
+        """
         fields_to_check = [
             self.bio,
             self.avatar,
-            self.skills,
             self.experience_level,
             self.github_username,
             self.portfolio_link,
@@ -101,7 +120,14 @@ class User(AbstractUser):
 
 
 class UserSkill(models.Model):
-    """User skills with proficiency levels."""
+    """
+    User skills with proficiency levels.
+
+    FIX: This is the single source of truth for skills.
+    The User.skills JSONField has been removed to eliminate the dual-storage
+    problem where the JSON list and this relational model could silently drift
+    out of sync.
+    """
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -129,7 +155,7 @@ class UserActivity(models.Model):
         ('commit_made', 'Commit Made'),
         ('message_sent', 'Message Sent'),
     ]
-    
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

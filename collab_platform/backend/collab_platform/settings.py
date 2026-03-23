@@ -125,6 +125,12 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',   # example — whatever you already have
+        'user': '1000/day',  # example
+        'login': '5/min',    # ADD THIS — 5 login attempts per minute per IP
+    }
 }
 
 # JWT settings
